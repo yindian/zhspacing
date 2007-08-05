@@ -1,0 +1,92 @@
+% zhspacing.sty		version 0.1
+% Simple macro for typesetting mixed Chinese documents in XeTeX
+%	with punctuation space adjustment and prohibitions
+% coded by YIN Dian (yindian@ustc)
+% Licensed under GPL
+% History:	070804	First usable version.
+%		070805	Several line breaking bug fixes.
+\catcode`\@=11
+\ifx\zhs@defined\@undefined
+\def\zhs@defined{\relax}
+\XeTeXlinebreaklocale="zh"
+\XeTeXlinebreakskip=0pt plus 0.2em minus 0.1em
+\XeTeXinterchartokenstate=1
+\def\zhnobreak{\nobreak}
+\newskip\zhskip
+\newskip\zhopenskip
+\newskip\zhinteropenskip
+\newskip\zhcloseskip
+\newskip\zhintercloseskip
+\newskip\zhjudouskip
+\newskip\zhinterjudouskip
+\zhskip=0.25em plus 0.15em minus 0.05em
+\zhopenskip=-0.2em minus 0.5em
+\zhinteropenskip=-0.5em plus 0.1em minus 0.1em
+\zhcloseskip=-0.2em minus 0.5em
+\zhintercloseskip=-0.5em plus 0.1em minus 0.1em
+\zhjudouskip=-0.2em minus 0.5em
+\zhinterjudouskip=-0.8em plus 0.1em minus 0.1em
+\def\zhspacing{%
+  \chardef\char@norml=0
+  \chardef\char@ideog=1
+  \chardef\char@openp=2
+  \chardef\char@close=3
+  \chardef\char@judou=4
+  \chardef\char@longp=5
+  \chardef\char@bound=255
+  % extra char class definitions
+  \XeTeXcharclass`：=\char@judou
+  \XeTeXcharclass`，=\char@judou
+  \XeTeXcharclass`、=\char@judou
+  \XeTeXcharclass`。=\char@judou
+  \XeTeXcharclass`．=\char@judou
+  \XeTeXcharclass`“=\char@openp
+  \XeTeXcharclass`”=\char@close
+  \XeTeXcharclass`‘=\char@openp
+  \XeTeXcharclass`’=\char@close
+  \XeTeXcharclass`—=\char@longp
+  \XeTeXcharclass`…=\char@longp
+  % font switch and space ignorance
+  \XeTeXinterchartoks\char@bound\char@ideog={\zhfont}
+  \XeTeXinterchartoks\char@ideog\char@bound={\enfont\ignorespaces}
+  \XeTeXinterchartoks\char@bound\char@openp={\allowbreak\hskip\zhopenskip\zhnobreak\hskip-\zhinteropenskip\vadjust{}\zhnobreak\hskip\zhinteropenskip\zhfont}
+  \XeTeXinterchartoks\char@openp\char@bound={\enfont\ignorespaces}
+  \XeTeXinterchartoks\char@bound\char@close={\zhnobreak\zhfont}
+  \XeTeXinterchartoks\char@close\char@bound={\zhnobreak\hskip\zhintercloseskip\allowbreak\hskip-\zhintercloseskip\hskip\zhcloseskip\enfont\ignorespaces}
+  \XeTeXinterchartoks\char@bound\char@judou={\zhnobreak\zhfont}
+  \XeTeXinterchartoks\char@judou\char@bound={\zhnobreak\hskip\zhintercloseskip\allowbreak\hskip-\zhintercloseskip\hskip\zhcloseskip\enfont\ignorespaces}
+  \XeTeXinterchartoks\char@bound\char@longp={\zhfont}
+  \XeTeXinterchartoks\char@longp\char@bound={\enfont\ignorespaces}
+  % font switch only
+  \XeTeXinterchartoks\char@norml\char@ideog={\hskip\zhskip\zhfont}
+  \XeTeXinterchartoks\char@ideog\char@norml={\hskip\zhskip\enfont}
+  \XeTeXinterchartoks\char@norml\char@openp={\zhfont\allowbreak\hskip\zhopenskip\zhnobreak\hskip-\zhinteropenskip\vadjust{}\zhnobreak\hskip\zhinteropenskip}
+  \XeTeXinterchartoks\char@openp\char@norml={\enfont}
+  \XeTeXinterchartoks\char@norml\char@close={\zhnobreak\zhfont}
+  \XeTeXinterchartoks\char@close\char@norml={\zhnobreak\hskip\zhintercloseskip\allowbreak\hskip-\zhintercloseskip\hskip\zhcloseskip\enfont}
+  \XeTeXinterchartoks\char@norml\char@judou={\zhnobreak\zhfont}
+  \XeTeXinterchartoks\char@judou\char@norml={\zhnobreak\hskip\zhinterjudouskip\allowbreak\hskip-\zhinterjudouskip\hskip\zhjudouskip\enfont}
+  \XeTeXinterchartoks\char@norml\char@longp={\zhfont}
+  \XeTeXinterchartoks\char@longp\char@norml={\enfont}
+  % punctuation space adjusting
+  \XeTeXinterchartoks\char@ideog\char@openp={\allowbreak\hskip\zhopenskip\zhnobreak\hskip-\zhinteropenskip\vadjust{}\zhnobreak\hskip\zhinteropenskip}
+  \XeTeXinterchartoks\char@close\char@ideog={\zhnobreak\hskip\zhintercloseskip\allowbreak\hskip-\zhintercloseskip\hskip\zhcloseskip}
+  \XeTeXinterchartoks\char@judou\char@ideog={\zhnobreak\hskip\zhinterjudouskip\allowbreak\hskip-\zhinterjudouskip\hskip\zhjudouskip}
+  \XeTeXinterchartoks\char@ideog\char@close={\zhnobreak}
+  \XeTeXinterchartoks\char@ideog\char@judou={\zhnobreak}
+  \XeTeXinterchartoks\char@openp\char@ideog={\zhnobreak}
+  \XeTeXinterchartoks\char@openp\char@close={\zhnobreak}
+  \XeTeXinterchartoks\char@openp\char@judou={\zhnobreak}
+  \XeTeXinterchartoks\char@close\char@openp={\zhnobreak\hskip\zhintercloseskip\allowbreak\vadjust{}\zhnobreak\hskip\zhinteropenskip}
+  \XeTeXinterchartoks\char@judou\char@openp={\zhnobreak\hskip\zhinterjudouskip\allowbreak\vadjust{}\zhnobreak\hskip\zhinteropenskip}
+  \XeTeXinterchartoks\char@openp\char@openp={\zhnobreak\hskip\zhinteropenskip}
+  \XeTeXinterchartoks\char@close\char@close={\zhnobreak\hskip\zhintercloseskip}
+  \XeTeXinterchartoks\char@close\char@judou={\zhnobreak\hskip\zhintercloseskip}
+  \XeTeXinterchartoks\char@judou\char@close={\zhnobreak\hskip\zhinterjudouskip}
+  \XeTeXinterchartoks\char@judou\char@judou={\zhnobreak\hskip\zhinterjudouskip}
+  \XeTeXinterchartoks\char@longp\char@longp={\zhnobreak}
+  % other
+  \zhfont
+  \parindent=2em
+}
+\fi
