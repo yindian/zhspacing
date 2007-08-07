@@ -5,6 +5,11 @@
 % Licensed under GPL
 % History:	070804	First usable version.
 %		070805	Several line breaking bug fixes.
+%		070807	\zhinteropenskip changed to 0.6em. \enfont
+%			TODO list written.
+% TODO:
+% 1. Use three skip parameters for each kind of punctuation classes.
+% 2. Utilize class inheritance.
 \catcode`\@=11
 \ifx\zhs@defined\@undefined
 \def\zhs@defined{\relax}
@@ -25,7 +30,7 @@
 \zhcloseskip=-0.2em minus 0.5em
 \zhintercloseskip=-0.5em plus 0.1em minus 0.1em
 \zhjudouskip=-0.2em minus 0.5em
-\zhinterjudouskip=-0.8em plus 0.1em minus 0.1em
+\zhinterjudouskip=-0.6em plus 0.1em minus 0.1em
 \def\zhspacing{%
   \chardef\char@norml=0
   \chardef\char@ideog=1
@@ -86,7 +91,7 @@
   \XeTeXinterchartoks\char@judou\char@judou={\zhnobreak\hskip\zhinterjudouskip}
   \XeTeXinterchartoks\char@longp\char@longp={\zhnobreak}
   % other
-  \zhfont
+  \enfont
   \parindent=2em
 }
 \fi
