@@ -2,6 +2,7 @@
 %	Implement easy inter-class token definition with inheritance
 %	Hist:	070807	First usable version coded. \newclass, \{set,get,prepend,append}interclasstoks
 %			The tricky part is prepending stuffs to a token register, see TeX by Topics.
+%		070808	Added \setclassnum and \registerXeTeXclasstoks
 \catcode`\@=11
 \ifx\@myclass@defined\@undefined
 \def\@myclass@defined{\relax}
@@ -105,5 +106,25 @@
      \fi
   }%
   \endgroup
+}
+\newlinechar`\^^J
+\def\setclassnum#1#2{%
+  \expandafter\chardef\csname @@classnum@#1\endcsname=#2
+}
+\def\registerXeTeXclasstoks{%
+  \@foreach\class\in\@class@list\do{%
+    \@ifundefined{@@classnum@\class}{}{%
+      \@foreach\anotherclass\in\@class@list\do{%
+        \@ifundefined{@@classnum@\anotherclass}{}{%
+	  \edef\@@register@act{\noexpand\global\noexpand\XeTeXinterchartoks\csname @@classnum@\class\endcsname
+	    \csname @@classnum@\anotherclass\endcsname={\expandafter\the\csname
+	    @@interclasstoks@\class @\anotherclass\endcsname}}
+	  \@@register@act
+	  \message{Registered (\class, \anotherclass) token: \expandafter\the\csname
+	    @@interclasstoks@\class @\anotherclass\endcsname ^^J}%
+	}%
+      }%
+    }%
+  }%
 }
 \fi
