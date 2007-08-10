@@ -4,6 +4,7 @@
 %			The tricky part is prepending stuffs to a token register, see TeX by Topics.
 %		070808	Added \setclassnum and \registerXeTeXclasstoks
 %		070809	Removed unnecessary \global's.
+%               070810  Only register non-empty tokens.
 \catcode`\@=11
 \ifx\@myclass@defined\@undefined
 \def\@myclass@defined{\relax}
@@ -65,7 +66,7 @@
 }
 \def\@newinterclasstoks#1#2{%
   \expandafter\newtoks\csname @@interclasstoks@#1@#2\endcsname
-  \csname @@interclasstoks@#1@#2\endcsname={\relax}%\meaning #1, \meaning #2}%
+  \csname @@interclasstoks@#1@#2\endcsname={}%\meaning #1, \meaning #2}%
   %%\expandafter\gdef\csname @@interclasstoks@#1@#2\endcsname{}%
 }
 \def\setinterclasstoks#1#2#3{%
@@ -117,16 +118,24 @@
     \@ifundefined{@@classnum@\class}{}{%
       \@foreach\anotherclass\in\@class@list\do{%
         \@ifundefined{@@classnum@\anotherclass}{}{%
-	  \edef\@@register@act{\noexpand\XeTeXinterchartoks\csname @@classnum@\class\endcsname
-	    \csname @@classnum@\anotherclass\endcsname\noexpand{\expandafter\the\csname
-	    @@interclasstoks@\class @\anotherclass\endcsname\noexpand}}
-	  \@@register@act
-	  \edef\@@register@act{\noexpand\message\noexpand{Registered (\expandafter\number
-	    \csname @@classnum@\class\endcsname, \expandafter\number
-	    \csname @@classnum@\anotherclass\endcsname)\noexpand}}%
-	  \@@register@act
-	  \message{Registered (\class, \anotherclass) token: \expandafter\the\csname
-	    @@interclasstoks@\class @\anotherclass\endcsname ^^J}%
+	  \edef\@@temp@macro{\the\csname @@interclasstoks@\class @\anotherclass\endcsname}
+	  \ifx\@@temp@macro\empty
+	  \else
+	    \edef\@@temp@macro{\@@temp@macro}
+	    \ifx\@@temp@macro\empty
+	    \else
+	      \edef\@@register@act{\noexpand\XeTeXinterchartoks\csname @@classnum@\class\endcsname
+	        \csname @@classnum@\anotherclass\endcsname\noexpand{\expandafter\the\csname
+	        @@interclasstoks@\class @\anotherclass\endcsname\noexpand}}
+	      \@@register@act
+	      \edef\@@register@act{\noexpand\message\noexpand{Registered (\expandafter\number
+	        \csname @@classnum@\class\endcsname, \expandafter\number
+	        \csname @@classnum@\anotherclass\endcsname)\noexpand}}%
+	      \@@register@act
+	      \message{Registered (\class, \anotherclass) token: \expandafter\the\csname
+	        @@interclasstoks@\class @\anotherclass\endcsname ^^J}%
+            \fi
+	  \fi
 	}%
       }%
     }%
