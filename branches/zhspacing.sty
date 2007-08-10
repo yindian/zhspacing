@@ -12,9 +12,10 @@
 %			Then I found it works when \relax is added.
 %		070810	Changed skip parameters. Removed \relax, only register
 %			non-empty tokens instead. Now it seems to work right.
+%			Several bugs fixed.
 % TODO:
-% 1. Use three skip parameters for each kind of punctuation classes.
-% 2. Utilize class inheritance.
+% 1. Use three skip parameters for each kind of punctuation classes. Done.
+% 2. Utilize class inheritance. Done.
 \catcode`\@=11
 \ifx\zhs@defined\@undefined
 \def\zhs@defined{\relax}
@@ -23,13 +24,13 @@
 \def\zhnobreak{\nobreak}
 % my skip
 \def\skipenzh{\hskip 0.25em plus 0.15em minus 0.05em}
-\def\skipzhopen{\hskip -0.2em plus 0.2em minus 0.3em}
-\def\skipzhinteropen{\hskip -0.4em plus 1em minus 1em}
+\def\skipzhopen{\hskip -0.2em plus 0.2em minus 0.1em}
+\def\skipzhinteropen{\hskip -0.4em}
 \def\skipzhlinestartopen{\hskip -0.3em}
-\def\skipzhclose{\hskip -0.2em plus 0.2em minus 0.3em}
+\def\skipzhclose{\hskip -0.2em plus 0.2em minus 0.1em}
 \def\skipzhinterclose{\hskip -0.4em}
 \def\skipzhlineendclose{\hskip -0.3em}
-\def\skipzhjudou{\hskip -0.2em plus 0.2em minus 0.3em}
+\def\skipzhjudou{\hskip -0.2em plus 0.2em minus 0.2em}
 \def\skipzhinterjudou{\hskip -0.4em}
 \def\skipzhlineendjudou{\hskip -0.5em}
 % neg
@@ -68,45 +69,38 @@
 \setclassnum{judou}{4}
 \newclass[fullwidth]{longpunct} % … etc
 \setclassnum{longpunct}{5}
+\newclass[fullwidth]{fwpunct} % extra fullwidth punctuations
+%\setclassnum{fwpunct}{7}
 % open fullwidth punctuation after other characters
-\@foreach\class\in{alphanum,hanzi,halfwidth,boundary}\do{%
-  %\appendinterclasstoks{\class}{openfw}{\mydbgmessage{^^JA1}\allowbreak\skipzhopen\zhnobreak\skipnegzhlinestartopen\vadjust{}\zhnobreak\skipzhlinestartopen}
-  \appendinterclasstoks{\class}{openfw}{\mydbgmessage{^^JA1}}
+\@foreach\class\in{hanzi,alphanum,halfwidth,boundary}\do{%
+  \prependinterclasstoks{\class}{openfw}{\mydbgmessage{^^JA1}\allowbreak\skipzhopen\skipnegzhlinestartopen\vadjust{}\zhnobreak\skipzhlinestartopen}
 }
 \setinterclasstoks{openfw}{openfw}{\mydbgmessage{^^JA2}\zhnobreak\skipzhinteropen}
 \setinterclasstoks{closefw}{openfw}{\mydbgmessage{^^JA3}\zhnobreak\skipzhlineendclose\allowbreak\skipnegzhlineendclose\skipzhinterclose\skipzhinteropen\skipnegzhlinestartopen\vadjust{}\zhnobreak\skipzhlinestartopen}
 \setinterclasstoks{judou}{openfw}{\mydbgmessage{^^JA4}\zhnobreak\skipzhlineendjudou\allowbreak\skipnegzhlineendjudou\skipzhinterjudou\skipzhinteropen\skipnegzhlinestartopen\vadjust{}\zhnobreak\skipzhlinestartopen}
-%\setinterclasstoks{openfw}{openfw}{\mydbgmessage{^^JA2}}
-%\setinterclasstoks{closefw}{openfw}{\mydbgmessage{^^JA3}}
-%\setinterclasstoks{judou}{openfw}{\mydbgmessage{^^JA4}}
 % close fullwidth punctuation before other characters
-\@foreach\class\in{alphanum,hanzi,halfwidth,boundary}\do{%
-  \appendinterclasstoks{closefw}{\class}{\mydbgmessage{^^JB1}\zhnobreak\skipzhlineendclose\allowbreak\skipnegzhlineendclose\skipzhclose}
-  %\appendinterclasstoks{closefw}{\class}{\mydbgmessage{^^JB1}}
+\@foreach\class\in{hanzi,alphanum,halfwidth,boundary}\do{%
+  \prependinterclasstoks{closefw}{\class}{\mydbgmessage{^^JB1}\zhnobreak\skipzhlineendclose\allowbreak\skipnegzhlineendclose\skipzhclose}
 }
 \setinterclasstoks{closefw}{closefw}{\mydbgmessage{^^JB2}\zhnobreak\skipzhinterclose}
 \setinterclasstoks{closefw}{judou}{\mydbgmessage{^^JB3}\zhnobreak\skipzhinterclose}
-%\setinterclasstoks{closefw}{closefw}{\mydbgmessage{^^JB2}}
-%\setinterclasstoks{closefw}{judou}{\mydbgmessage{^^JB3}}
 % judou punctuation before other characters
-\@foreach\class\in{alphanum,hanzi,halfwidth,boundary}\do{%
-  \appendinterclasstoks{judou}{\class}{\mydbgmessage{^^JC1}\zhnobreak\skipzhlineendjudou\allowbreak\skipnegzhlineendjudou\skipzhjudou}
-  %\appendinterclasstoks{judou}{\class}{\mydbgmessage{^^JC1}}
+\@foreach\class\in{hanzi,alphanum,halfwidth,boundary}\do{%
+  \prependinterclasstoks{judou}{\class}{\mydbgmessage{^^JC1}\zhnobreak\skipzhlineendjudou\allowbreak\skipnegzhlineendjudou\skipzhjudou}
 }
 \setinterclasstoks{judou}{judou}{\mydbgmessage{^^JC2}\zhnobreak\skipzhinterjudou}
-%\setinterclasstoks{judou}{judou}{\mydbgmessage{^^JC2}}
 % open fullwidth punctuation before other characters
-\@foreach\class\in{alphanum,hanzi,halfwidth,boundary,closefw,judou}\do{%
-  \appendinterclasstoks{openfw}{\class}{\mydbgmessage{^^Ja}\zhnobreak}
+\@foreach\class\in{hanzi,alphanum,halfwidth,boundary,closefw,judou}\do{%
+  \prependinterclasstoks{openfw}{\class}{\mydbgmessage{^^Ja}\zhnobreak}
 }
 % close fullwidth punctuation after other characters
-\@foreach\class\in{alphanum,hanzi,halfwidth,boundary}\do{%
-  \appendinterclasstoks{\class}{closefw}{\mydbgmessage{^^Jb}\zhnobreak}
+\@foreach\class\in{hanzi,alphanum,halfwidth,boundary}\do{%
+  \prependinterclasstoks{\class}{closefw}{\mydbgmessage{^^Jb}\zhnobreak}
 }
 \setinterclasstoks{judou}{closefw}{\mydbgmessage{^^Jb2}\zhnobreak\skipzhinterjudou}
 % judou punctuation after other characters
-\@foreach\class\in{alphanum,hanzi,halfwidth,boundary}\do{%
-  \appendinterclasstoks{\class}{judou}{\mydbgmessage{^^Jc}\zhnobreak}
+\@foreach\class\in{hanzi,alphanum,halfwidth,boundary}\do{%
+  \prependinterclasstoks{\class}{judou}{\mydbgmessage{^^Jc}\zhnobreak}
 }
 % long fullwidth punctuations
 \setinterclasstoks{longpunct}{longpunct}{\zhnobreak}
@@ -117,6 +111,7 @@
   \@foreach\character\in{`”,`’}\do{\XeTeXcharclass\character=3}
   \@foreach\character\in{`—,`…}\do{\XeTeXcharclass\character=5}
   \@foreach\character\in{`\!,`\",`\',`\(,`\),`\,,`\-,`\.,`\:,`\;,`\<,`\>,`\?,`\[,`\],`\`,`\{,`\}}\do{\XeTeXcharclass\character=6}
+  \@foreach\character\in{`℃}\do{\XeTeXcharclass\character=1}
   \registerXeTeXclasstoks
   %\XeTeXcharclass 255 1={}
   %\XeTeXcharclass 1 255={}
