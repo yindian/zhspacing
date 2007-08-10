@@ -3,6 +3,8 @@
 %	Hist:	070807	First usable version coded. \newclass, \{set,get,prepend,append}interclasstoks
 %			The tricky part is prepending stuffs to a token register, see TeX by Topics.
 %		070808	Added \setclassnum and \registerXeTeXclasstoks
+%		070809	Removed unnecessary \global's.
+%               070810  Only register non-empty tokens.
 \catcode`\@=11
 \ifx\@myclass@defined\@undefined
 \def\@myclass@defined{\relax}
@@ -12,10 +14,10 @@
 \def\newclass{\@ifnextchar[{\@newclass@param}{\@newclass}}
 \def\@newclass@param[#1]#2{%
   \if!#1!
-    \errmessage{Base class name shouldn't be empty.}
+    \errmessage{Base class name shouldn't be empty.}%
   \fi
   \if!#2!
-    \errmessage{Class name shouldn't be empty.}
+    \errmessage{Class name shouldn't be empty.}%
   \fi
   \@ifundefined{@@classname@#1}{%
     \errmessage{Base class not defined yet.}%
@@ -42,7 +44,7 @@
 }
 \def\@newclass#1{%
   \if!#1!
-    \errmessage{Class name shouldn't be empty.}
+    \errmessage{Class name shouldn't be empty.}%
   \fi
   \@ifundefined{@@classname@#1}{% if
     \@namedef{@@classname@#1}{\relax}%
@@ -63,13 +65,13 @@
   \@ifundefined{@@baseclass@#1}{\def#2{}}{\edef#2{\csname @@baseclass@#1\endcsname}}%
 }
 \def\@newinterclasstoks#1#2{%
-  \global\expandafter\newtoks\csname @@interclasstoks@#1@#2\endcsname
-  \global\csname @@interclasstoks@#1@#2\endcsname={}%\meaning #1, \meaning #2}%
+  \expandafter\newtoks\csname @@interclasstoks@#1@#2\endcsname
+  \csname @@interclasstoks@#1@#2\endcsname={}%\meaning #1, \meaning #2}%
   %%\expandafter\gdef\csname @@interclasstoks@#1@#2\endcsname{}%
 }
 \def\setinterclasstoks#1#2#3{%
   \csname @@interclasstoks@#1@#2\endcsname={#3}%
-  %%\global\expandafter\edef\csname @@interclasstoks@#1@#2\endcsname{#3}%
+  %%\expandafter\edef\csname @@interclasstoks@#1@#2\endcsname{#3}%
 }
 \def\getinterclasstoks#1#2{%
   \expandafter\the\csname @@interclasstoks@#1@#2\endcsname
@@ -81,9 +83,9 @@
 \def\prependinterclasstoks#1#2#3{%
   \toks0={#3}%
   \edef\@@prepend@act{\csname @@interclasstoks@#1@#2\endcsname={\the\toks0
-    \expandafter\the\csname @@interclasstoks@#1@#2\endcsname}}
+    \expandafter\the\csname @@interclasstoks@#1@#2\endcsname}}%
   \@@prepend@act
-  %%\global\expandafter\edef\csname @@interclasstoks@#1@#2\endcsname{#3\csname @@interclasstoks@#1@#2\endcsname}%
+  %%\expandafter\edef\csname @@interclasstoks@#1@#2\endcsname{#3\csname @@interclasstoks@#1@#2\endcsname}%
 }
 \def\appendinterclasstoks#1#2#3{%
   \expandafter\csname @@interclasstoks@#1@#2\endcsname\expandafter{\the\csname @@interclasstoks@#1@#2\endcsname #3}%
@@ -116,13 +118,25 @@
     \@ifundefined{@@classnum@\class}{}{%
       \@foreach\anotherclass\in\@class@list\do{%
         \@ifundefined{@@classnum@\anotherclass}{}{%
-	  \edef\@@register@act{\noexpand\global\noexpand\XeTeXinterchartoks\csname @@classnum@\class\endcsname
-	    \csname @@classnum@\anotherclass\endcsname={\expandafter\the\csname
-	    @@interclasstoks@\class @\anotherclass\endcsname}}
-	  \@@register@act
-	  \message{Registered (\class, \anotherclass) token: \expandafter\the\csname
-	    @@interclasstoks@\class @\anotherclass\endcsname ^^J}%
-	}%
+          \edef\@@temp@macro{\the\csname @@interclasstoks@\class @\anotherclass\endcsname}%
+          \ifx\@@temp@macro\empty
+          \else
+            \edef\@@temp@macro{\@@temp@macro}%
+            \ifx\@@temp@macro\empty
+            \else
+              \edef\@@register@act{\noexpand\XeTeXinterchartoks\csname @@classnum@\class\endcsname
+                \csname @@classnum@\anotherclass\endcsname\noexpand{\expandafter\the\csname
+                @@interclasstoks@\class @\anotherclass\endcsname\noexpand}}%
+              \@@register@act
+              \edef\@@register@act{\noexpand\message\noexpand{Registered (\expandafter\number
+                \csname @@classnum@\class\endcsname, \expandafter\number
+                \csname @@classnum@\anotherclass\endcsname)\noexpand}}%
+              \@@register@act
+              \message{Registered (\class, \anotherclass) token: \expandafter\the\csname
+                @@interclasstoks@\class @\anotherclass\endcsname ^^J}%
+            \fi
+          \fi
+        }%
       }%
     }%
   }%
