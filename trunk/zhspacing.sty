@@ -14,6 +14,7 @@
 %			non-empty tokens instead. Now it seems to work right.
 %			Several bugs fixed. CJK Ext-A/B support added.
 %			Added three skip schemes.
+%		070812	Fixed font switch bug between CJK Ext-A and Ext-B chars.
 \catcode`\@=11
 \ifx\zhs@defined\@undefined
 \def\zhs@defined{\relax}
@@ -144,6 +145,8 @@
   \prependinterclasstoks{cjkexta}{\class}{\zhfont}
   \prependinterclasstoks{cjkextb}{\class}{\zhfont}
 }
+\setinterclasstoks{cjkexta}{cjkextb}{\zhcjkextbfont}
+\setinterclasstoks{cjkextb}{cjkexta}{\zhcjkextafont}
 \newcount\n
 \n="3400 \loop \ifnum\n<"4E00 \XeTeXcharclass\n=8 \advance\n by 1\repeat
 \n="20000\loop \ifnum\n<"30000 \XeTeXcharclass\n=9 \advance\n by 1\repeat
