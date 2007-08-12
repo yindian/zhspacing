@@ -1,4 +1,4 @@
-% zhspacing.sty		version 0.2
+% zhspacing.sty		version 0.3
 % Simple macro for typesetting mixed Chinese documents in XeTeX
 %	with punctuation space adjustment and prohibitions
 % coded by YIN Dian (yindian@ustc)
@@ -12,54 +12,89 @@
 %			Then I found it works when \relax is added.
 %		070810	Changed skip parameters. Removed \relax, only register
 %			non-empty tokens instead. Now it seems to work right.
-%			Several bugs fixed.
-% TODO:
-%   Use three skip parameters for each kind of punctuation classes. Done.
-%   Utilize class inheritance. Done.
+%			Several bugs fixed. CJK Ext-A/B support added.
+%			Added three skip schemes.
+%		070812	Fixed font switch bug between CJK Ext-A and Ext-B chars.
+%			Obsoleted the use of \enfont.
 \catcode`\@=11
 \ifx\zhs@defined\@undefined
 \def\zhs@defined{\relax}
 \XeTeXlinebreaklocale="zh"
 \XeTeXlinebreakskip=0pt plus 0.2em minus 0.1em
 \def\zhnobreak{\nobreak}
-% my skip
-\def\skipenzh{\hskip 0.25em plus 0.15em minus 0.05em}
-\def\skipzhopen{\hskip -0.2em plus 0.2em minus 0.1em}
-\def\skipzhinteropen{\hskip -0.4em}
-\def\skipzhlinestartopen{\hskip -0.3em}
-\def\skipzhclose{\hskip -0.2em plus 0.2em minus 0.1em}
-\def\skipzhinterclose{\hskip -0.4em}
-\def\skipzhlineendclose{\hskip -0.3em}
-\def\skipzhjudou{\hskip -0.2em plus 0.2em minus 0.2em}
-\def\skipzhinterjudou{\hskip -0.4em}
-\def\skipzhlineendjudou{\hskip -0.5em}
-% neg
-\def\skipnegzhlinestartopen{\hskip 0.3em}
-\def\skipnegzhlineendclose{\hskip 0.3em}
-\def\skipnegzhlineendjudou{\hskip 0.5em}
+\def\simsunskipscheme{% should be fit for sim-xxx fonts
+  % my skip
+  \def\skipenzh{\hskip 0.25em plus 0.15em minus 0.05em}
+  \def\skipzhopen{\hskip -0.1em plus 0.1em minus 0.2em}
+  \def\skipzhinteropen{\hskip -0.3em plus 0.1em minus 0.1em}
+  \def\skipzhlinestartopen{\hskip -0.3em}
+  \def\skipzhclose{\hskip -0.1em  plus 0.1em minus 0.2em}
+  \def\skipzhinterclose{\hskip -0.3em plus 0.1em minus 0.1em}
+  \def\skipzhlineendclose{\hskip -0.3em}
+  \def\skipzhjudou{\hskip -0.1em  plus 0.1em minus 0.4em}
+  \def\skipzhinterjudou{\hskip -0.3em plus 0.1em minus 0.1em}
+  \def\skipzhlineendjudou{\hskip -0.5em}
+  % neg
+  \def\skipnegzhlinestartopen{\hskip 0.3em}
+  \def\skipnegzhlineendclose{\hskip 0.3em}
+  \def\skipnegzhlineendjudou{\hskip 0.5em}
+}
+\def\emptyskipscheme{% just for test use
+  % my skip
+  \def\skipenzh{\hskip 0.25em plus 0.15em minus 0.05em}
+  \def\skipzhopen{\hskip 0pt}
+  \def\skipzhinteropen{\hskip 0pt}
+  \def\skipzhlinestartopen{\hskip 0pt}
+  \def\skipzhclose{\hskip 0pt}
+  \def\skipzhinterclose{\hskip 0pt}
+  \def\skipzhlineendclose{\hskip 0pt}
+  \def\skipzhjudou{\hskip 0pt}
+  \def\skipzhinterjudou{\hskip 0pt}
+  \def\skipzhlineendjudou{\hskip 0pt}
+  % neg
+  \def\skipnegzhlinestartopen{\hskip 0pt}
+  \def\skipnegzhlineendclose{\hskip 0pt}
+  \def\skipnegzhlineendjudou{\hskip 0pt}
+}
+\def\haltskipscheme{% should be fit for Adobe opentype fonts with halfwidth alternative enabled
+  % my skip
+  \def\skipenzh{\hskip 0.25em plus 0.15em minus 0.05em}
+  \def\skipzhopen{\hskip 0.3em minus 0.3em}
+  \def\skipzhinteropen{\hskip 0em plus 0.1em }
+  \def\skipzhlinestartopen{\hskip 0em}
+  \def\skipzhclose{\hskip 0.3em  minus 0.3em}
+  \def\skipzhinterclose{\hskip 0em plus 0.1em}
+  \def\skipzhlineendclose{\hskip 0em}
+  \def\skipzhjudou{\hskip 0.4em  minus 0.4em}
+  \def\skipzhinterjudou{\hskip 0em plus 0.1em}
+  \def\skipzhlineendjudou{\hskip 0em}
+  % neg
+  \def\skipnegzhlinestartopen{\hskip 0em}
+  \def\skipnegzhlineendclose{\hskip 0em}
+  \def\skipnegzhlineendjudou{\hskip 0em}
+}
+\simsunskipscheme
 %\let\mydbgmessage\message
 \def\mydbgmessage#1{}
 
+% Character class settings.
 \input myclass.sty
 % three base classes: boundary, halfwidth and fullwidth
 \newclass{boundary}
 \setclassnum{boundary}{255}
 \newclass{halfwidth}
 \newclass{fullwidth}
-\setinterclasstoks{boundary}{fullwidth}{\mydbgmessage{^^JZ}\zhfont}
-\setinterclasstoks{fullwidth}{boundary}{\mydbgmessage{^^Jz}\enfont\ignorespaces}
-\setinterclasstoks{halfwidth}{fullwidth}{\mydbgmessage{^^JP}\zhfont}
-\setinterclasstoks{fullwidth}{halfwidth}{\mydbgmessage{^^Jp}\enfont\ignorespaces}
+\setinterclasstoks{boundary}{fullwidth}{\mydbgmessage{^^JZ}\begingroup\zhfont}
+\setinterclasstoks{fullwidth}{boundary}{\mydbgmessage{^^Jz}\endgroup\ignorespaces}
+\setinterclasstoks{halfwidth}{fullwidth}{\mydbgmessage{^^JP}\begingroup\zhfont}
+\setinterclasstoks{fullwidth}{halfwidth}{\mydbgmessage{^^Jp}\endgroup\ignorespaces}
 % derived class alphanum and hanzi
 \newclass[halfwidth]{alphanum}
 \setclassnum{alphanum}{0}
 \newclass[fullwidth]{hanzi}
 \setclassnum{hanzi}{1}
-\appendinterclasstoks{alphanum}{hanzi}{\mydbgmessage{^^JQ}\skipenzh}
-\prependinterclasstoks{hanzi}{alphanum}{\mydbgmessage{^^Jq}\skipenzh}
-% derived class from halfwidth
-\newclass[halfwidth]{hwpunct} % (, ., etc
-\setclassnum{hwpunct}{6}
+\appendinterclasstoks{alphanum}{hanzi}{\mydbgmessage{^^JQ}\skipenzh\relax}
+\prependinterclasstoks{hanzi}{alphanum}{\mydbgmessage{^^Jq}\skipenzh\relax}
 % derived class from fullwidth
 \newclass[fullwidth]{openfw} % ‘, （, etc
 \setclassnum{openfw}{2}
@@ -67,43 +102,67 @@
 \setclassnum{closefw}{3}
 \newclass[fullwidth]{judou} % ，, 。, etc
 \setclassnum{judou}{4}
-\newclass[fullwidth]{longpunct} % … etc
-\setclassnum{longpunct}{5}
 \newclass[fullwidth]{fwpunct} % extra fullwidth punctuations
-%\setclassnum{fwpunct}{7}
+\setclassnum{fwpunct}{7}
 % open fullwidth punctuation after other characters
-\@foreach\class\in{hanzi,alphanum,halfwidth,boundary}\do{%
-  \prependinterclasstoks{\class}{openfw}{\mydbgmessage{^^JA1}\allowbreak\skipzhopen\skipnegzhlinestartopen\vadjust{}\zhnobreak\skipzhlinestartopen}
+\@foreach\class\in{hanzi,fwpunct,alphanum,halfwidth,boundary}\do{%
+  \prependinterclasstoks{\class}{openfw}{\mydbgmessage{^^JA1}\allowbreak\skipzhopen\nobreak\skipnegzhlinestartopen\vadjust{}\zhnobreak\skipzhlinestartopen\relax}
 }
-\setinterclasstoks{openfw}{openfw}{\mydbgmessage{^^JA2}\zhnobreak\skipzhinteropen}
-\setinterclasstoks{closefw}{openfw}{\mydbgmessage{^^JA3}\zhnobreak\skipzhlineendclose\allowbreak\skipnegzhlineendclose\skipzhinterclose\skipzhinteropen\skipnegzhlinestartopen\vadjust{}\zhnobreak\skipzhlinestartopen}
-\setinterclasstoks{judou}{openfw}{\mydbgmessage{^^JA4}\zhnobreak\skipzhlineendjudou\allowbreak\skipnegzhlineendjudou\skipzhinterjudou\skipzhinteropen\skipnegzhlinestartopen\vadjust{}\zhnobreak\skipzhlinestartopen}
+\setinterclasstoks{openfw}{openfw}{\mydbgmessage{^^JA2}\zhnobreak\skipzhinteropen\relax}
+\setinterclasstoks{closefw}{openfw}{\mydbgmessage{^^JA3}\zhnobreak\skipzhlineendclose\allowbreak\skipnegzhlineendclose\skipzhinterclose\skipzhinteropen\skipnegzhlinestartopen\vadjust{}\zhnobreak\skipzhlinestartopen\relax}
+\setinterclasstoks{judou}{openfw}{\mydbgmessage{^^JA4}\zhnobreak\skipzhlineendjudou\allowbreak\skipnegzhlineendjudou\skipzhinterjudou\skipzhinteropen\skipnegzhlinestartopen\vadjust{}\zhnobreak\skipzhlinestartopen\relax}
 % close fullwidth punctuation before other characters
-\@foreach\class\in{hanzi,alphanum,halfwidth,boundary}\do{%
-  \prependinterclasstoks{closefw}{\class}{\mydbgmessage{^^JB1}\zhnobreak\skipzhlineendclose\allowbreak\skipnegzhlineendclose\skipzhclose}
+\@foreach\class\in{hanzi,fwpunct,alphanum,halfwidth,boundary}\do{%
+  \prependinterclasstoks{closefw}{\class}{\mydbgmessage{^^JB1}\zhnobreak\skipzhlineendclose\allowbreak\skipnegzhlineendclose\skipzhclose\relax}
 }
-\setinterclasstoks{closefw}{closefw}{\mydbgmessage{^^JB2}\zhnobreak\skipzhinterclose}
-\setinterclasstoks{closefw}{judou}{\mydbgmessage{^^JB3}\zhnobreak\skipzhinterclose}
+\setinterclasstoks{closefw}{closefw}{\mydbgmessage{^^JB2}\zhnobreak\skipzhinterclose\relax}
+\setinterclasstoks{closefw}{judou}{\mydbgmessage{^^JB3}\zhnobreak\skipzhinterclose\relax}
 % judou punctuation before other characters
-\@foreach\class\in{hanzi,alphanum,halfwidth,boundary}\do{%
-  \prependinterclasstoks{judou}{\class}{\mydbgmessage{^^JC1}\zhnobreak\skipzhlineendjudou\allowbreak\skipnegzhlineendjudou\skipzhjudou}
+\@foreach\class\in{hanzi,fwpunct,alphanum,halfwidth,boundary}\do{%
+  \prependinterclasstoks{judou}{\class}{\mydbgmessage{^^JC1}\zhnobreak\skipzhlineendjudou\allowbreak\skipnegzhlineendjudou\skipzhjudou\relax}
 }
-\setinterclasstoks{judou}{judou}{\mydbgmessage{^^JC2}\zhnobreak\skipzhinterjudou}
+\setinterclasstoks{judou}{closefw}{\mydbgmessage{^^Jb2}\zhnobreak\skipzhinterjudou\relax}
+\setinterclasstoks{judou}{judou}{\mydbgmessage{^^JC2}\zhnobreak\skipzhinterjudou\relax}
 % open fullwidth punctuation before other characters
-\@foreach\class\in{hanzi,alphanum,halfwidth,boundary,closefw,judou}\do{%
+\@foreach\class\in{hanzi,fwpunct,alphanum,halfwidth,boundary,closefw,judou}\do{%
   \prependinterclasstoks{openfw}{\class}{\mydbgmessage{^^Ja}\zhnobreak}
 }
 % close fullwidth punctuation after other characters
-\@foreach\class\in{hanzi,alphanum,halfwidth,boundary}\do{%
+\@foreach\class\in{hanzi,fwpunct,alphanum,halfwidth,boundary}\do{%
   \prependinterclasstoks{\class}{closefw}{\mydbgmessage{^^Jb}\zhnobreak}
 }
-\setinterclasstoks{judou}{closefw}{\mydbgmessage{^^Jb2}\zhnobreak\skipzhinterjudou}
 % judou punctuation after other characters
-\@foreach\class\in{hanzi,alphanum,halfwidth,boundary}\do{%
+\@foreach\class\in{hanzi,fwpunct,alphanum,halfwidth,boundary}\do{%
   \prependinterclasstoks{\class}{judou}{\mydbgmessage{^^Jc}\zhnobreak}
 }
+% CJK Ext-A/B support
+\newclass[hanzi]{cjkexta}
+\setclassnum{cjkexta}{8}
+\newclass[hanzi]{cjkextb}
+\setclassnum{cjkextb}{9}
+\@foreach\class\in{hanzi,fwpunct,openfw,closefw,judou,alphanum,halfwidth,boundary}\do{%
+  \appendinterclasstoks{\class}{cjkexta}{\zhcjkextafont}
+  \appendinterclasstoks{\class}{cjkextb}{\zhcjkextbfont}
+  \prependinterclasstoks{cjkexta}{\class}{\zhfont}
+  \prependinterclasstoks{cjkextb}{\class}{\zhfont}
+}
+\setinterclasstoks{cjkexta}{cjkextb}{\zhcjkextbfont}
+\setinterclasstoks{cjkextb}{cjkexta}{\zhcjkextafont}
+\newcount\n
+\n="3400 \loop \ifnum\n<"4E00 \XeTeXcharclass\n=8 \advance\n by 1\repeat
+\n="20000\loop \ifnum\n<"30000 \XeTeXcharclass\n=9 \advance\n by 1\repeat
 % long fullwidth punctuations
+\newclass[fwpunct]{longpunct} % … etc
+\setclassnum{longpunct}{5}
 \setinterclasstoks{longpunct}{longpunct}{\zhnobreak}
+% derived class from halfwidth
+\newclass[halfwidth]{hwpunct} % (, ., etc
+\setclassnum{hwpunct}{6}
+
+% Font settings
+\@ifundefined{zhfont}{\font\zhfont="SimSun" at 10pt}{}
+\@ifundefined{zhcjkextafont}{\def\zhcjkextafont{\message{CJK Ext-A}}}{}
+\@ifundefined{zhcjkextbfont}{\def\zhcjkextbfont{\message{CJK Ext-B}}}{}
 
 \def\zhspacing{%
   \@foreach\character\in{`：,`，,`、,`。,`．}\do{\XeTeXcharclass\character=4}
@@ -111,15 +170,10 @@
   \@foreach\character\in{`”,`’}\do{\XeTeXcharclass\character=3}
   \@foreach\character\in{`—,`…}\do{\XeTeXcharclass\character=5}
   \@foreach\character\in{`\!,`\",`\',`\(,`\),`\,,`\-,`\.,`\:,`\;,`\<,`\>,`\?,`\[,`\],`\`,`\{,`\}}\do{\XeTeXcharclass\character=6}
-  \@foreach\character\in{`℃}\do{\XeTeXcharclass\character=1}
+  \@foreach\character\in{`℃}\do{\XeTeXcharclass\character=7}
   \registerXeTeXclasstoks
-  %\XeTeXcharclass 255 1={}
-  %\XeTeXcharclass 1 255={}
-  %\XeTeXcharclass 1 1={}
   \XeTeXinterchartokenstate=1
-  \zhfont
   \parindent=2em
-  \enfont
   \message{zhspacing installed.^^J}
 }
 \fi
