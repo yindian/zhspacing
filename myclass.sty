@@ -113,6 +113,7 @@
 \def\setclassnum#1#2{%
   \expandafter\chardef\csname @@classnum@#1\endcsname=#2
 }
+\def\mydbgmessag@#1{}
 \def\registerXeTeXclasstoks{%
   \@foreach\class\in\@class@list\do{%
     \@ifundefined{@@classnum@\class}{}{%
@@ -128,11 +129,11 @@
                 \csname @@classnum@\anotherclass\endcsname\noexpand{\expandafter\the\csname
                 @@interclasstoks@\class @\anotherclass\endcsname\noexpand}}%
               \@@register@act
-              \edef\@@register@act{\noexpand\message\noexpand{Registered (\expandafter\number
+              \edef\@@register@act{\noexpand\mydbgmessag@\noexpand{Registered (\expandafter\number
                 \csname @@classnum@\class\endcsname, \expandafter\number
                 \csname @@classnum@\anotherclass\endcsname)\noexpand}}%
               \@@register@act
-              \message{Registered (\class, \anotherclass) token: \expandafter\the\csname
+              \mydbgmessag@{Registered (\class, \anotherclass) token: \expandafter\the\csname
                 @@interclasstoks@\class @\anotherclass\endcsname ^^J}%
             \fi
           \fi
