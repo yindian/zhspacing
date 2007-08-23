@@ -1,4 +1,4 @@
-% zhspacing.sty		version 0.3
+% zhspacing.sty		version 0.4
 % Simple macro for typesetting mixed Chinese documents in XeTeX
 %	with punctuation space adjustment and prohibitions
 % coded by YIN Dian (yindian@ustc)
@@ -16,7 +16,12 @@
 %			Added three skip schemes.
 %		070812	Fixed font switch bug between CJK Ext-A and Ext-B chars.
 %			Obsoleted the use of \enfont.
-%		070816	Moved svn branches to trunck. Removed debug messages.
+%		070822	Fixed bug of unbalanced group when using ulem? Cleared
+%			XeTeX's pre-defined inter-char tokens. Use seperate
+%			font for punctuations. 
+%			Deprecated the use of begin/end-groups in LaTeX, in 
+%			order to work properly with ulem. Coded zhulem.sty.
+%		070823	Use more flexible way to save font.
 \catcode`\@=11
 \ifx\zhs@defined\@undefined
 \def\zhs@defined{\relax}
@@ -25,6 +30,7 @@
 \def\zhnobreak{\nobreak}
 \def\simsunskipscheme{% should be fit for sim-xxx fonts
   % my skip
+  \def\skipzh{\hskip 0em plus 0.2em minus 0.1em}
   \def\skipenzh{\hskip 0.25em plus 0.15em minus 0.05em}
   \def\skipzhopen{\hskip -0.1em plus 0.1em minus 0.2em}
   \def\skipzhinteropen{\hskip -0.3em plus 0.1em minus 0.1em}
@@ -42,6 +48,7 @@
 }
 \def\emptyskipscheme{% just for test use
   % my skip
+  \def\skipzh{\hskip 0em plus 0.1em}
   \def\skipenzh{\hskip 0.25em plus 0.15em minus 0.05em}
   \def\skipzhopen{\hskip 0pt}
   \def\skipzhinteropen{\hskip 0pt}
@@ -59,6 +66,7 @@
 }
 \def\haltskipscheme{% should be fit for Adobe opentype fonts with halfwidth alternative enabled
   % my skip
+  \def\skipzh{\hskip 0em plus 0.2em minus 0.1em}
   \def\skipenzh{\hskip 0.25em plus 0.15em minus 0.05em}
   \def\skipzhopen{\hskip 0.3em minus 0.3em}
   \def\skipzhinteropen{\hskip 0em plus 0.1em }
@@ -78,6 +86,41 @@
 %\let\mydbgmessage\message
 \def\mydbgmessage#1{}
 
+% font save and restore
+\def\zhs@oldf@encoding{}
+\def\zhs@oldf@family{}
+\def\zhs@oldf@series{}
+\def\zhs@oldf@shape{}
+\def\zhs@oldf@size{}
+\def\zhs@savef@nt#1{%
+  \expandafter\xdef\csname zhs@#1f@encoding\endcsname{\f@encoding}%
+  \expandafter\xdef\csname zhs@#1f@family\endcsname{\f@family}%
+  \expandafter\xdef\csname zhs@#1f@series\endcsname{\f@series}%
+  \expandafter\xdef\csname zhs@#1f@shape\endcsname{\f@shape}%
+  \expandafter\xdef\csname zhs@#1f@size\endcsname{\f@size}%
+}
+\def\zhs@restoref@nt#1{%
+  \edef\f@encoding{\csname zhs@#1f@encoding\endcsname}%
+  \edef\f@family{\csname zhs@#1f@family\endcsname}%
+  \edef\f@series{\csname zhs@#1f@series\endcsname}%
+  \edef\f@shape{\csname zhs@#1f@shape\endcsname}%
+  \edef\f@size{\csname zhs@#1f@size\endcsname}%
+  \selectfont
+}
+\def\zhs@printf@nt#1{%
+  \immediate\write16{Font #1 is: \csname zhs@#1f@encoding\endcsname/\csname zhs@#1f@family\endcsname/\csname
+  zhs@#1f@series\endcsname/\csname zhs@#1f@shape\endcsname/\csname zhs@#1f@size\endcsname}%
+}
+\def\zhgroupsavefont{%
+  \let\zhs@savefont=\begingroup
+  \let\zhs@restorefont=\endgroup
+}
+\def\zhnfsssavefont{%
+  \def\zhs@savefont{\zhs@savef@nt{old}}
+  \def\zhs@restorefont{\zhs@restoref@nt{old}}
+}
+\@ifundefined{LaTeX}{\zhgroupsavefont}{\zhnfsssavefont}
+
 % Character class settings.
 \input myclass.sty
 % three base classes: boundary, halfwidth and fullwidth
@@ -85,17 +128,20 @@
 \setclassnum{boundary}{255}
 \newclass{halfwidth}
 \newclass{fullwidth}
-\setinterclasstoks{boundary}{fullwidth}{\mydbgmessage{^^JZ}\begingroup\zhfont}
-\setinterclasstoks{fullwidth}{boundary}{\mydbgmessage{^^Jz}\endgroup\ignorespaces}
-\setinterclasstoks{halfwidth}{fullwidth}{\mydbgmessage{^^JP}\begingroup\zhfont}
-\setinterclasstoks{fullwidth}{halfwidth}{\mydbgmessage{^^Jp}\endgroup\ignorespaces}
+\setinterclasstoks{boundary}{fullwidth}{\mydbgmessage{^^JZ}\zhs@savefont\zhfont}
+\setinterclasstoks{fullwidth}{boundary}{\mydbgmessage{^^Jz}\zhs@restorefont\ignorespaces}
+\setinterclasstoks{halfwidth}{fullwidth}{\mydbgmessage{^^JP}\zhs@savefont\zhfont}
+\setinterclasstoks{fullwidth}{halfwidth}{\mydbgmessage{^^Jp}\zhs@restorefont\ignorespaces}
 % derived class alphanum and hanzi
 \newclass[halfwidth]{alphanum}
 \setclassnum{alphanum}{0}
 \newclass[fullwidth]{hanzi}
 \setclassnum{hanzi}{1}
-\appendinterclasstoks{alphanum}{hanzi}{\mydbgmessage{^^JQ}\skipenzh\relax}
-\prependinterclasstoks{hanzi}{alphanum}{\mydbgmessage{^^Jq}\skipenzh\relax}
+\setinterclasstoks{hanzi}{hanzi}{\skipzh\relax}
+%\appendinterclasstoks{alphanum}{hanzi}{\mydbgmessage{^^JQ}\skipenzh\relax}
+%\prependinterclasstoks{hanzi}{alphanum}{\mydbgmessage{^^Jq}\skipenzh\relax}
+\setinterclasstoks{alphanum}{hanzi}{\mydbgmessage{^^JQ}\skipenzh\relax\zhs@savefont\zhfont}
+\setinterclasstoks{hanzi}{alphanum}{\mydbgmessage{^^Jq}\zhs@restorefont\skipenzh\relax\ignorespaces}
 % derived class from fullwidth
 \newclass[fullwidth]{openfw} % ‘, （, etc
 \setclassnum{openfw}{2}
@@ -136,6 +182,11 @@
 \@foreach\class\in{hanzi,fwpunct,alphanum,halfwidth,boundary}\do{%
   \prependinterclasstoks{\class}{judou}{\mydbgmessage{^^Jc}\zhnobreak}
 }
+% punctuation font change
+\@foreach\class\in{openfw,closefw,judou,fwpunct}\do{%
+  \appendinterclasstoks{hanzi}{\class}{\zhpunctfont}
+  \appendinterclasstoks{\class}{hanzi}{\zhfont}
+}
 % CJK Ext-A/B support
 \newclass[hanzi]{cjkexta}
 \setclassnum{cjkexta}{8}
@@ -161,9 +212,18 @@
 \setclassnum{hwpunct}{6}
 
 % Font settings
-\@ifundefined{zhfont}{\font\zhfont="SimSun" at 10pt}{}
-\@ifundefined{zhcjkextafont}{\def\zhcjkextafont{\message{CJK Ext-A}}}{}
-\@ifundefined{zhcjkextbfont}{\def\zhcjkextbfont{\message{CJK Ext-B}}}{}
+\@ifundefined{LaTeX}{%
+  \@ifundefined{zhfont}{\font\zhfont="SimSun" at 10pt}{}
+  \@ifundefined{zhpunctfont}{\font\zhpunctfont="SimSun" at 10pt}{}
+  \@ifundefined{zhcjkextafont}{\def\zhcjkextafont{\message{CJK Ext-A}}}{}
+  \@ifundefined{zhcjkextbfont}{\def\zhcjkextbfont{\message{CJK Ext-B}}}{}
+}{%
+  \RequirePackage{fontspec}
+  \@ifundefined{zhfont}{\newfontfamily\zhfont[BoldFont=SimHei]{SimSun}}{}
+  \@ifundefined{zhpunctfont}{\newfontfamily\zhpunctfont{SimSun}}{}
+  \@ifundefined{zhcjkextafont}{\def\zhcjkextafont{\message{CJK Ext-A}}}{}
+  \@ifundefined{zhcjkextbfont}{\def\zhcjkextbfont{\message{CJK Ext-B}}}{}
+}
 
 \def\zhspacing{%
   \@foreach\character\in{`：,`，,`、,`。,`．}\do{\XeTeXcharclass\character=4}
@@ -172,6 +232,22 @@
   \@foreach\character\in{`—,`…}\do{\XeTeXcharclass\character=5}
   \@foreach\character\in{`\!,`\",`\',`\(,`\),`\,,`\-,`\.,`\:,`\;,`\<,`\>,`\?,`\[,`\],`\`,`\{,`\}}\do{\XeTeXcharclass\character=6}
   \@foreach\character\in{`℃}\do{\XeTeXcharclass\character=7}
+  % clear XeTeX pre-defined toks
+  \XeTeXinterchartoks 0 1 = {}
+  \XeTeXinterchartoks 0 2 = {}
+  \XeTeXinterchartoks 0 3 = {}
+  \XeTeXinterchartoks 1 0 = {}
+  \XeTeXinterchartoks 2 0 = {}
+  \XeTeXinterchartoks 3 0 = {}
+  \XeTeXinterchartoks 1 1 = {}
+  \XeTeXinterchartoks 1 2 = {}
+  \XeTeXinterchartoks 1 3 = {}
+  \XeTeXinterchartoks 2 1 = {}
+  \XeTeXinterchartoks 2 2 = {}
+  \XeTeXinterchartoks 2 3 = {}
+  \XeTeXinterchartoks 3 1 = {}
+  \XeTeXinterchartoks 3 2 = {}
+  \XeTeXinterchartoks 3 3 = {}
   \registerXeTeXclasstoks
   \XeTeXinterchartokenstate=1
   \parindent=2em
