@@ -21,7 +21,10 @@
 %			font for punctuations. 
 %			Deprecated the use of begin/end-groups in LaTeX, in 
 %			order to work properly with ulem. Coded zhulem.sty.
-%		070823	Use more flexible way to save font.
+%		070823	Use more flexible way to save font. Changed space
+%			ignoring mechanism after hanzi to allow \skipenzh added
+%			between hanzi and boundary if the next non-space token
+%			is a char and is not fullwidth nor in PUA.
 \catcode`\@=11
 \ifx\zhs@defined\@undefined
 \def\zhs@defined{\relax}
@@ -119,8 +122,23 @@
   \def\zhs@savefont{\zhs@savef@nt{old}}
   \def\zhs@restorefont{\zhs@restoref@nt{old}}
 }
+\input usefulmacros.sty
 \@ifundefined{LaTeX}{\zhgroupsavefont}{\zhnfsssavefont}
 
+% test CJK char
+\input ifcjkchar.sty
+\let\zhs@tmpchar\relax
+\def\zhs@skipspaces{\futurenonspacelet\zhs@tmpchar\zhs@skipsp@ces}
+\def\zhs@skipsp@ces{%
+  \expandafter\mydbgmessage\expandafter{\meaning\zhs@tmpchar}%
+  \ifcat a\noexpand\zhs@tmpchar % catcode 11
+    \ifcjkchar\zhs@tmpchar{}{\skipenzh\relax}%
+  \else
+    \ifcat !\noexpand\zhs@tmpchar % catcode 12
+      \ifcjkchar\zhs@tmpchar{}{\skipenzh\relax}%
+    \fi
+  \fi
+}
 % Character class settings.
 \input myclass.sty
 % three base classes: boundary, halfwidth and fullwidth
@@ -131,7 +149,7 @@
 \setinterclasstoks{boundary}{fullwidth}{\mydbgmessage{^^JZ}\zhs@savefont\zhfont}
 \setinterclasstoks{fullwidth}{boundary}{\mydbgmessage{^^Jz}\zhs@restorefont\ignorespaces}
 \setinterclasstoks{halfwidth}{fullwidth}{\mydbgmessage{^^JP}\zhs@savefont\zhfont}
-\setinterclasstoks{fullwidth}{halfwidth}{\mydbgmessage{^^Jp}\zhs@restorefont\ignorespaces}
+\setinterclasstoks{fullwidth}{halfwidth}{\mydbgmessage{^^Jp}\zhs@restorefont}
 % derived class alphanum and hanzi
 \newclass[halfwidth]{alphanum}
 \setclassnum{alphanum}{0}
@@ -141,7 +159,8 @@
 %\appendinterclasstoks{alphanum}{hanzi}{\mydbgmessage{^^JQ}\skipenzh\relax}
 %\prependinterclasstoks{hanzi}{alphanum}{\mydbgmessage{^^Jq}\skipenzh\relax}
 \setinterclasstoks{alphanum}{hanzi}{\mydbgmessage{^^JQ}\skipenzh\relax\zhs@savefont\zhfont}
-\setinterclasstoks{hanzi}{alphanum}{\mydbgmessage{^^Jq}\zhs@restorefont\skipenzh\relax\ignorespaces}
+\setinterclasstoks{hanzi}{alphanum}{\mydbgmessage{^^Jq}\zhs@restorefont\skipenzh\relax}
+\setinterclasstoks{hanzi}{boundary}{\mydbgmessage{^^J!}\zhs@restorefont\zhs@skipspaces}
 % derived class from fullwidth
 \newclass[fullwidth]{openfw} % ‘, （, etc
 \setclassnum{openfw}{2}

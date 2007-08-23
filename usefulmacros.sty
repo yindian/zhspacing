@@ -66,11 +66,22 @@
 \long\def\@tforeach#1\in#2\do#3{%
   \expandafter\@tfor\expandafter#1\expandafter:\expandafter=#2\do{#3}%
 }
+
+\def\@BTcs{}
+\let\nexttoken\relax
+\let\next\relax
+\def\futurenonspacelet#1{\def\@BTcs{#1}%
+   \afterassignment\@BTfnslone\let\nexttoken= }
+\def\@BTfnslone{\expandafter\futurelet\@BTcs\@BTfnsltwo}
+\def\@BTfnsltwo{\expandafter\ifx\@BTcs\@sptoken\let\next=\@BTfnslthree
+   \else\let\next=\nexttoken\fi \next}
+\def\@BTfnslthree{\afterassignment\@BTfnslone\let\next= }
+
 \newbox\fbox@tmpbox
 \newdimen\fbox@linewidth
 \newdimen\fbox@tmpdim
 \fbox@linewidth=0.4pt
-\def\fbox#1{%
+\long\def\fbox#1{%
   \setbox\fbox@tmpbox=\hbox{#1}%
   \fbox@tmpdim=2\fbox@linewidth
   \advance\fbox@tmpdim\wd\fbox@tmpbox
