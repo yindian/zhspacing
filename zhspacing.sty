@@ -25,6 +25,8 @@
 %			ignoring mechanism after hanzi to allow \skipenzh added
 %			between hanzi and boundary if the next non-space token
 %			is a char and is not fullwidth nor in PUA.
+%		070824	Enabled automatic skip between math formulas and CJK 
+%			chars.
 \catcode`\@=11
 \ifx\zhs@defined\@undefined
 \def\zhs@defined{\relax}
@@ -136,7 +138,16 @@
   \else
     \ifcat !\noexpand\zhs@tmpchar % catcode 12
       \ifcjkchar\zhs@tmpchar{}{\skipenzh\relax}%
+    \else
+      \ifcat $\noexpand\zhs@tmpchar % catcode 3
+        \skipenzh\relax
+      \fi
     \fi
+  \fi
+}
+\def\zhs@aftermathskip{%
+  \ifnum\lastnodetype=10 % math node
+    \skipenzh\relax
   \fi
 }
 % Character class settings.
@@ -160,7 +171,8 @@
 %\prependinterclasstoks{hanzi}{alphanum}{\mydbgmessage{^^Jq}\skipenzh\relax}
 \setinterclasstoks{alphanum}{hanzi}{\mydbgmessage{^^JQ}\skipenzh\relax\zhs@savefont\zhfont}
 \setinterclasstoks{hanzi}{alphanum}{\mydbgmessage{^^Jq}\zhs@restorefont\skipenzh\relax}
-\setinterclasstoks{hanzi}{boundary}{\mydbgmessage{^^J!}\zhs@restorefont\zhs@skipspaces}
+\setinterclasstoks{hanzi}{boundary}{\mydbgmessage{^^Ji}\zhs@restorefont\zhs@skipspaces}
+\setinterclasstoks{boundary}{hanzi}{\mydbgmessage{^^JI}\zhs@aftermathskip\zhs@savefont\zhfont}
 % derived class from fullwidth
 \newclass[fullwidth]{openfw} % ‘, （, etc
 \setclassnum{openfw}{2}
