@@ -26,10 +26,11 @@
 %			between hanzi and boundary if the next non-space token
 %			is a char and is not fullwidth nor in PUA.
 %		070824	Enabled automatic skip between math formulas and CJK 
-%			chars.
+%			chars. Changed skip schemes. Added \zhspacingrevision.
 \catcode`\@=11
 \ifx\zhs@defined\@undefined
 \def\zhs@defined{\relax}
+\def\zhspacingrevision{2007.8.24.}
 \XeTeXlinebreaklocale="zh"
 \XeTeXlinebreakskip=0pt plus 0.2em minus 0.1em
 \def\zhnobreak{\nobreak}
@@ -39,17 +40,17 @@
   \def\skipenzh{\hskip 0.25em plus 0.15em minus 0.05em}
   \def\skipzhopen{\hskip -0.1em plus 0.1em minus 0.2em}
   \def\skipzhinteropen{\hskip -0.3em plus 0.1em minus 0.1em}
-  \def\skipzhlinestartopen{\hskip -0.3em}
+  \def\skipzhlinestartopen{\hskip -0.35em}
   \def\skipzhclose{\hskip -0.1em  plus 0.1em minus 0.2em}
   \def\skipzhinterclose{\hskip -0.3em plus 0.1em minus 0.1em}
-  \def\skipzhlineendclose{\hskip -0.3em}
+  \def\skipzhlineendclose{\hskip -0.35em}
   \def\skipzhjudou{\hskip -0.1em  plus 0.1em minus 0.4em}
   \def\skipzhinterjudou{\hskip -0.3em plus 0.1em minus 0.1em}
-  \def\skipzhlineendjudou{\hskip -0.5em}
+  \def\skipzhlineendjudou{\hskip -0.6em}
   % neg
-  \def\skipnegzhlinestartopen{\hskip 0.3em}
-  \def\skipnegzhlineendclose{\hskip 0.3em}
-  \def\skipnegzhlineendjudou{\hskip 0.5em}
+  \def\skipnegzhlinestartopen{\hskip 0.35em}
+  \def\skipnegzhlineendclose{\hskip 0.35em}
+  \def\skipnegzhlineendjudou{\hskip 0.6em}
 }
 \def\emptyskipscheme{% just for test use
   % my skip
