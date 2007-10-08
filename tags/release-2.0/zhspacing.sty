@@ -27,11 +27,6 @@
 %			is a char and is not fullwidth nor in PUA.
 %		070824	Enabled automatic skip between math formulas and CJK 
 %			chars. Changed skip schemes. Added \zhspacingrevision.
-%		071008	Fixed bug of missing \skipzh when hanzi next to space.
-%			Found bug of \zhs@skipspaces --- \iffalse error.
-%			Found bug in 10pt article:
-%			\fbox{\vbox{\hsize=12.2001pt\scriptsize \parindent=0pt
-%			\parskip=0pt《口口》口：“}}
 \catcode`\@=11
 \ifx\zhs@defined\@undefined
 \def\zhs@defined{\relax}
@@ -140,10 +135,10 @@
 \def\zhs@skipsp@ces{%
   \expandafter\mydbgmessage\expandafter{\meaning\zhs@tmpchar}%
   \ifcat a\noexpand\zhs@tmpchar % catcode 11
-    \ifcjkchar\zhs@tmpchar{\skipzh\relax}{\skipenzh\relax}%
+    \ifcjkchar\zhs@tmpchar{}{\skipenzh\relax}%
   \else
     \ifcat !\noexpand\zhs@tmpchar % catcode 12
-      \ifcjkchar\zhs@tmpchar{\skipzh\relax}{\skipenzh\relax}%
+      \ifcjkchar\zhs@tmpchar{}{\skipenzh\relax}%
     \else
       \ifcat $\noexpand\zhs@tmpchar % catcode 3
         \skipenzh\relax

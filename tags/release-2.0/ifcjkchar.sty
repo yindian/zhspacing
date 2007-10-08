@@ -1,0 +1,59 @@
+%	ifcjkchar.sty	coded by YIN Dian
+%	Provide \ifcjkchar to test whether the given char is fullwidth
+%	Hist:	070823	First version out. Use home-made \chartonum to get
+%			unicode value of the given char.
+\catcode`\@=11
+\ifx\ifcjkchar\@undefined
+
+\def\ifnuminrange#1[#2\to#3]#4#5{%
+  \ifnum#1<#2%
+    #5%
+  \else
+    \ifnum#1>#3%
+      #5%
+    \else
+      #4%
+    \fi
+  \fi
+}
+\def\ifcjkchar#1#2#3{%
+  \chartonum{#1}\@tmp@char
+  \ifnuminrange\@tmp@char["2E80\to "A4C6]{#2}{% All BMP CJK chars including Yi
+    \ifnuminrange\@tmp@char["D800\to "F8FF]{#2}{% PUA
+      \ifnuminrange\@tmp@char["F900\to "FAD9]{#2}{% CJK compatible ideographies
+        \ifnuminrange\@tmp@char["FE10\to "FFEF]{#2}{% CJK compatible punctuations
+          \ifnuminrange\@tmp@char["20000\to "2FA1D]{#2}{% CJK Ext-B and above
+	    \ifnum\@tmp@char>"F0000% PUA
+	      #2%
+	    \else
+	      #3%
+	    \fi
+	  }%
+        }%
+      }%
+    }%
+  }%
+}
+\def\chartonum#1#2{% #1: an explicit or implicit char; #2: return macro
+  \ifcat#1a%
+    \edef#2{\expandafter\@lettertonum\meaning #1\@end}%
+    \edef#2{\expandafter\number\expandafter\lq #2}%
+  \else
+    \ifcat#1!%
+      \edef#2{\expandafter\@chartonum\meaning #1\@end}%
+      \edef#2{\expandafter\number\expandafter\lq #2}%
+    \else
+      \errmessage{In \string\chartonum, parameter not a letter, nor a character}%
+    \fi
+  \fi
+}
+{\escapechar=-1
+ \expandafter\expandafter\expandafter\gdef
+ \expandafter\expandafter\expandafter\@lettertonum
+ \expandafter\string\csname the letter \endcsname#1\@end{#1}
+ \expandafter\expandafter\expandafter\gdef
+ \expandafter\expandafter\expandafter\@chartonum
+ \expandafter\string\csname the character \endcsname#1\@end{#1}
+}
+
+\fi
