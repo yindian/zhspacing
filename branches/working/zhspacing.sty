@@ -32,6 +32,9 @@
 %			Found bug in 10pt article:
 %			\fbox{\vbox{\hsize=12.2001pt\scriptsize \parindent=0pt
 %			\parskip=0pt《口口》口：“}}
+%		071014	Found bug introduced by the last bug fix, which breaks
+%			the punctuation prohibitions.
+%		071015	Fixed bug of not changing punctuation font after space.
 \catcode`\@=11
 \ifx\zhs@defined\@undefined
 \def\zhs@defined{\relax}
@@ -223,6 +226,8 @@
 \@foreach\class\in{openfw,closefw,judou,fwpunct}\do{%
   \appendinterclasstoks{hanzi}{\class}{\zhpunctfont}
   \appendinterclasstoks{\class}{hanzi}{\zhfont}
+  \appendinterclasstoks{boundary}{\class}{\zhpunctfont}
+  \appendinterclasstoks{halfwidth}{\class}{\zhpunctfont}
 }
 % CJK Ext-A/B support
 \newclass[hanzi]{cjkexta}
