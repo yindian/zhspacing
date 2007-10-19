@@ -35,6 +35,10 @@
 %		071014	Found bug introduced by the last bug fix, which breaks
 %			the punctuation prohibitions.
 %		071015	Fixed bug of not changing punctuation font after space.
+%		071019	Fixed the \iffalse bug. Use \the\XeTeXcharclass 
+%			instead of ifcjkchar. Added ability to deal with space
+%			seperated characters.
+%                       Defined token patterns to simplify settings, haha.
 \catcode`\@=11
 \ifx\zhs@defined\@undefined
 \def\zhs@defined{\relax}
@@ -137,19 +141,58 @@
 \@ifundefined{LaTeX}{\zhgroupsavefont}{\zhnfsssavefont}
 
 % test CJK char
-\input ifcjkchar.sty
+\def\chartonum#1#2{% #1: an explicit or implicit char; #2: return macro
+  \ifcat#1a%
+    \edef#2{\expandafter\@lettertonum\meaning #1\@end}%
+    \edef#2{\expandafter\number\expandafter\lq #2}%
+  \else
+    \ifcat#1!%
+      \edef#2{\expandafter\@chartonum\meaning #1\@end}%
+      \edef#2{\expandafter\number\expandafter\lq #2}%
+    \else
+      \errmessage{In \string\chartonum, parameter not a letter, nor a character}%
+    \fi
+  \fi
+}
+{\escapechar=-1
+ \expandafter\expandafter\expandafter\gdef
+ \expandafter\expandafter\expandafter\@lettertonum
+ \expandafter\string\csname the letter \endcsname#1\@end{#1}
+ \expandafter\expandafter\expandafter\gdef
+ \expandafter\expandafter\expandafter\@chartonum
+ \expandafter\string\csname the character \endcsname#1\@end{#1}
+}
 \let\zhs@tmpchar\relax
 \def\zhs@skipspaces{\futurenonspacelet\zhs@tmpchar\zhs@skipsp@ces}
 \def\zhs@skipsp@ces{%
   \expandafter\mydbgmessage\expandafter{\meaning\zhs@tmpchar}%
   \ifcat a\noexpand\zhs@tmpchar % catcode 11
-    \ifcjkchar\zhs@tmpchar{\skipzh\relax}{\skipenzh\relax}%
+    \zhs@testskipenzh
   \else
     \ifcat !\noexpand\zhs@tmpchar % catcode 12
-      \ifcjkchar\zhs@tmpchar{\skipzh\relax}{\skipenzh\relax}%
+      \zhs@testskipenzh
     \else
       \ifcat $\noexpand\zhs@tmpchar % catcode 3
         \skipenzh\relax
+      \fi
+    \fi
+  \fi
+}
+\def\zhs@testskipenzh{%
+  \chartonum\zhs@tmpchar\zhs@tmpmacro
+  \edef\zhs@tmpmacro{\the\XeTeXcharclass\zhs@tmpmacro}%
+  \ifnum\zhs@tmpmacro = \getclassnum{alphanum}%
+    \skipenzh\relax
+  \else
+    \ifnum\zhs@tmpmacro = \getclassnum{hanzi}%
+      \skipzh\relax
+    \else
+      \ifnum\zhs@tmpmacro = \getclassnum{closefw}%
+        \getinterclasstoks{hanzi}{closefw}%
+      \else
+        \ifnum\zhs@tmpmacro = \getclassnum{judou}%
+          \getinterclasstoks{hanzi}{judou}%
+        \fi
       \fi
     \fi
   \fi
@@ -191,25 +234,38 @@
 \setclassnum{judou}{4}
 \newclass[fullwidth]{fwpunct} % extra fullwidth punctuations
 \setclassnum{fwpunct}{7}
+% patterns
+\def\zhs@punct@inter#1{%
+  \zhnobreak\csname skipzhinter#1\endcsname\relax
+}
+\def\zhs@leftpunct@after#1{%
+  \allowbreak\csname skipzh#1\endcsname\nobreak\csname skipnegzhlinestart#1\endcsname\vadjust{}\zhnobreak\csname skipzhlinestart#1\endcsname\relax
+}
+\def\zhs@leftpunct@after@right#1#2{%
+  \zhnobreak\csname skipzhlineend#2\endcsname\allowbreak\csname skipnegzhlineend#2\endcsname\csname skipzhinter#2\endcsname\csname skipzhinter#1\endcsname\csname skipnegzhlinestart#1\endcsname\vadjust{}\zhnobreak\csname skipzhlinestart#1\endcsname\relax
+}
+\def\zhs@rightpunct@before#1{%
+  \zhnobreak\csname skipzhlineend#1\endcsname\allowbreak\csname skipnegzhlineend#1\endcsname\csname skipzh#1\endcsname\relax
+}
 % open fullwidth punctuation after other characters
 \@foreach\class\in{hanzi,fwpunct,alphanum,halfwidth,boundary}\do{%
-  \prependinterclasstoks{\class}{openfw}{\mydbgmessage{^^JA1}\allowbreak\skipzhopen\nobreak\skipnegzhlinestartopen\vadjust{}\zhnobreak\skipzhlinestartopen\relax}
+  \prependinterclasstoks{\class}{openfw}{\mydbgmessage{^^JA1}\zhs@leftpunct@after{open}}
 }
-\setinterclasstoks{openfw}{openfw}{\mydbgmessage{^^JA2}\zhnobreak\skipzhinteropen\relax}
-\setinterclasstoks{closefw}{openfw}{\mydbgmessage{^^JA3}\zhnobreak\skipzhlineendclose\allowbreak\skipnegzhlineendclose\skipzhinterclose\skipzhinteropen\skipnegzhlinestartopen\vadjust{}\zhnobreak\skipzhlinestartopen\relax}
-\setinterclasstoks{judou}{openfw}{\mydbgmessage{^^JA4}\zhnobreak\skipzhlineendjudou\allowbreak\skipnegzhlineendjudou\skipzhinterjudou\skipzhinteropen\skipnegzhlinestartopen\vadjust{}\zhnobreak\skipzhlinestartopen\relax}
+\setinterclasstoks{openfw}{openfw}{\mydbgmessage{^^JA2}\zhs@punct@inter{open}}
+\setinterclasstoks{closefw}{openfw}{\mydbgmessage{^^JA3}\zhs@leftpunct@after@right{open}{close}}
+\setinterclasstoks{judou}{openfw}{\mydbgmessage{^^JA4}\zhs@leftpunct@after@right{open}{judou}}
 % close fullwidth punctuation before other characters
 \@foreach\class\in{hanzi,fwpunct,alphanum,halfwidth,boundary}\do{%
-  \prependinterclasstoks{closefw}{\class}{\mydbgmessage{^^JB1}\zhnobreak\skipzhlineendclose\allowbreak\skipnegzhlineendclose\skipzhclose\relax}
+  \prependinterclasstoks{closefw}{\class}{\mydbgmessage{^^JB1}\zhs@rightpunct@before{close}}
 }
-\setinterclasstoks{closefw}{closefw}{\mydbgmessage{^^JB2}\zhnobreak\skipzhinterclose\relax}
-\setinterclasstoks{closefw}{judou}{\mydbgmessage{^^JB3}\zhnobreak\skipzhinterclose\relax}
+\setinterclasstoks{closefw}{closefw}{\mydbgmessage{^^JB2}\zhs@punct@inter{close}}
+\setinterclasstoks{closefw}{judou}{\mydbgmessage{^^JB3}\zhs@punct@inter{close}}
 % judou punctuation before other characters
 \@foreach\class\in{hanzi,fwpunct,alphanum,halfwidth,boundary}\do{%
-  \prependinterclasstoks{judou}{\class}{\mydbgmessage{^^JC1}\zhnobreak\skipzhlineendjudou\allowbreak\skipnegzhlineendjudou\skipzhjudou\relax}
+  \prependinterclasstoks{judou}{\class}{\mydbgmessage{^^JC1}\zhs@rightpunct@before{judou}}
 }
-\setinterclasstoks{judou}{closefw}{\mydbgmessage{^^Jb2}\zhnobreak\skipzhinterjudou\relax}
-\setinterclasstoks{judou}{judou}{\mydbgmessage{^^JC2}\zhnobreak\skipzhinterjudou\relax}
+\setinterclasstoks{judou}{closefw}{\mydbgmessage{^^Jb2}\zhs@punct@inter{judou}}
+\setinterclasstoks{judou}{judou}{\mydbgmessage{^^JC2}\zhs@punct@inter{judou}}
 % open fullwidth punctuation before other characters
 \@foreach\class\in{hanzi,fwpunct,alphanum,halfwidth,boundary,closefw,judou}\do{%
   \prependinterclasstoks{openfw}{\class}{\mydbgmessage{^^Ja}\zhnobreak}
@@ -242,9 +298,11 @@
 }
 \setinterclasstoks{cjkexta}{cjkextb}{\zhcjkextbfont}
 \setinterclasstoks{cjkextb}{cjkexta}{\zhcjkextafont}
+{
 \newcount\n
-\n="3400 \loop \ifnum\n<"4E00 \XeTeXcharclass\n=8 \advance\n by 1\repeat
-\n="20000\loop \ifnum\n<"30000 \XeTeXcharclass\n=9 \advance\n by 1\repeat
+\n="3400 \loop \ifnum\n<"4E00 \global\XeTeXcharclass\n=8 \advance\n by 1\repeat
+\n="20000\loop \ifnum\n<"30000 \global\XeTeXcharclass\n=9 \advance\n by 1\repeat
+}
 % long fullwidth punctuations
 \newclass[fwpunct]{longpunct} % … etc
 \setclassnum{longpunct}{5}
