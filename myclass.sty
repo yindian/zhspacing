@@ -5,6 +5,7 @@
 %		070808	Added \setclassnum and \registerXeTeXclasstoks
 %		070809	Removed unnecessary \global's.
 %               070810  Only register non-empty tokens.
+%		071019	Added \getclassnum
 \catcode`\@=11
 \ifx\@myclass@defined\@undefined
 \def\@myclass@defined{\relax}
@@ -112,6 +113,9 @@
 \newlinechar`\^^J
 \def\setclassnum#1#2{%
   \expandafter\chardef\csname @@classnum@#1\endcsname=#2
+}
+\def\getclassnum#1{%
+  \csname @@classnum@#1\endcsname
 }
 \def\mydbgmessag@#1{}
 \def\registerXeTeXclasstoks{%
