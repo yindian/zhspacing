@@ -1,4 +1,4 @@
-% zhspacing.sty		version 0.4
+% zhspacing.sty		version 0.5
 % Simple macro for typesetting mixed Chinese documents in XeTeX
 %	with punctuation space adjustment and prohibitions
 % coded by YIN Dian (yindian@ustc)
@@ -29,20 +29,22 @@
 %			chars. Changed skip schemes. Added \zhspacingrevision.
 %		071008	Fixed bug of missing \skipzh when hanzi next to space.
 %			Found bug of \zhs@skipspaces --- \iffalse error.
-%			Found bug in 10pt article:
+%			Found bug?? in 10pt article:
 %			\fbox{\vbox{\hsize=12.2001pt\scriptsize \parindent=0pt
 %			\parskip=0pt《口口》口：“}}
 %		071014	Found bug introduced by the last bug fix, which breaks
 %			the punctuation prohibitions.
 %		071015	Fixed bug of not changing punctuation font after space.
 %		071019	Fixed the \iffalse bug. Use \the\XeTeXcharclass 
-%			instead of ifcjkchar. Added ability to deal with space
-%			seperated characters.
+%			instead of ifcjkchar. 
 %                       Defined token patterns to simplify settings, haha.
+%		071020	Added ability to deal with space seperated characters.
+% TODO:	1. 	Seperate fullstop and halfstop skips. Currently they are both
+%		treated as judou.
+%	2.	Change \ifcat catcode test to \ifnum\the\catcode.
 \catcode`\@=11
-\ifx\zhs@defined\@undefined
-\def\zhs@defined{\relax}
-\def\zhspacingrevision{2007.8.24.}
+\ifx\zhspacingrevision\@undefined
+\def\zhspacingrevision{2007.10.20.}
 \XeTeXlinebreaklocale="zh"
 \XeTeXlinebreakskip=0pt plus 0.2em minus 0.1em
 \def\zhnobreak{\nobreak}
@@ -178,6 +180,7 @@
     \fi
   \fi
 }
+\def\zhs@tmpmacro{-1}
 \def\zhs@testskipenzh{%
   \chartonum\zhs@tmpchar\zhs@tmpmacro
   \edef\zhs@tmpmacro{\the\XeTeXcharclass\zhs@tmpmacro}%
@@ -192,6 +195,10 @@
       \else
         \ifnum\zhs@tmpmacro = \getclassnum{judou}%
           \getinterclasstoks{hanzi}{judou}%
+        \else
+          \ifnum\zhs@tmpmacro = \getclassnum{openfw}%
+            \zhnobreak\skipnegzhlinestartopen\relax % compensate
+          \fi
         \fi
       \fi
     \fi
@@ -241,33 +248,71 @@
 \def\zhs@leftpunct@after#1{%
   \allowbreak\csname skipzh#1\endcsname\nobreak\csname skipnegzhlinestart#1\endcsname\vadjust{}\zhnobreak\csname skipzhlinestart#1\endcsname\relax
 }
+\def\zhs@leftpunct@after@boundary#1{%
+  \zhnobreak\csname skipzhlinestart#1\endcsname\relax
+}
+\let\zhs@tmp\relax
+\def\zhs@leftpunct@before@boundary#1{\def\zhs@tmp{#1}\futurenonspacelet\zhs@tmpchar\zhs@leftpunct@before@boundary@}
+\def\zhs@leftpunct@before@boundary@{%
+  \mydbgmessage{left punct before boundary}%
+  \expandafter\mydbgmessage\expandafter{\meaning\zhs@tmpchar}%
+  \ifcat a\noexpand\zhs@tmpchar % catcode 11
+    \zhs@leftpunct@before@boundary@@
+  \else
+    \ifcat !\noexpand\zhs@tmpchar % catcode 12
+      \zhs@leftpunct@before@boundary@@
+    \fi
+  \fi
+}
+\def\zhs@leftpunct@before@boundary@@{%
+  \chartonum\zhs@tmpchar\zhs@tmpmacro
+  \edef\zhs@tmpmacro{\the\XeTeXcharclass\zhs@tmpmacro}%
+  \zhs@tmp
+}
 \def\zhs@leftpunct@after@right#1#2{%
   \zhnobreak\csname skipzhlineend#2\endcsname\allowbreak\csname skipnegzhlineend#2\endcsname\csname skipzhinter#2\endcsname\csname skipzhinter#1\endcsname\csname skipnegzhlinestart#1\endcsname\vadjust{}\zhnobreak\csname skipzhlinestart#1\endcsname\relax
 }
 \def\zhs@rightpunct@before#1{%
   \zhnobreak\csname skipzhlineend#1\endcsname\allowbreak\csname skipnegzhlineend#1\endcsname\csname skipzh#1\endcsname\relax
 }
+\def\zhs@rightpunct@before@boundary#1{\def\zhs@tmp{#1}\futurenonspacelet\zhs@tmpchar\zhs@rightpunct@before@boundary@}
+\def\zhs@rightpunct@before@boundary@{%
+  \mydbgmessage{right punct before boundary}%
+  \expandafter\mydbgmessage\expandafter{\meaning\zhs@tmpchar}%
+  \ifcat a\noexpand\zhs@tmpchar % catcode 11
+    \zhs@rightpunct@before@boundary@@
+  \else
+    \ifcat !\noexpand\zhs@tmpchar % catcode 12
+      \zhs@rightpunct@before@boundary@@
+    \fi
+  \fi
+}
+\def\zhs@rightpunct@before@boundary@@{%
+  \chartonum\zhs@tmpchar\zhs@tmpmacro
+  \edef\zhs@tmpmacro{\the\XeTeXcharclass\zhs@tmpmacro}%
+  \zhs@tmp
+}
 % open fullwidth punctuation after other characters
-\@foreach\class\in{hanzi,fwpunct,alphanum,halfwidth,boundary}\do{%
+\@foreach\class\in{hanzi,fwpunct,alphanum,halfwidth}\do{%,boundary
   \prependinterclasstoks{\class}{openfw}{\mydbgmessage{^^JA1}\zhs@leftpunct@after{open}}
 }
 \setinterclasstoks{openfw}{openfw}{\mydbgmessage{^^JA2}\zhs@punct@inter{open}}
 \setinterclasstoks{closefw}{openfw}{\mydbgmessage{^^JA3}\zhs@leftpunct@after@right{open}{close}}
 \setinterclasstoks{judou}{openfw}{\mydbgmessage{^^JA4}\zhs@leftpunct@after@right{open}{judou}}
 % close fullwidth punctuation before other characters
-\@foreach\class\in{hanzi,fwpunct,alphanum,halfwidth,boundary}\do{%
+\@foreach\class\in{hanzi,fwpunct,alphanum,halfwidth}\do{%,boundary
   \prependinterclasstoks{closefw}{\class}{\mydbgmessage{^^JB1}\zhs@rightpunct@before{close}}
 }
 \setinterclasstoks{closefw}{closefw}{\mydbgmessage{^^JB2}\zhs@punct@inter{close}}
 \setinterclasstoks{closefw}{judou}{\mydbgmessage{^^JB3}\zhs@punct@inter{close}}
 % judou punctuation before other characters
-\@foreach\class\in{hanzi,fwpunct,alphanum,halfwidth,boundary}\do{%
+\@foreach\class\in{hanzi,fwpunct,alphanum,halfwidth}\do{%,boundary
   \prependinterclasstoks{judou}{\class}{\mydbgmessage{^^JC1}\zhs@rightpunct@before{judou}}
 }
 \setinterclasstoks{judou}{closefw}{\mydbgmessage{^^Jb2}\zhs@punct@inter{judou}}
 \setinterclasstoks{judou}{judou}{\mydbgmessage{^^JC2}\zhs@punct@inter{judou}}
 % open fullwidth punctuation before other characters
-\@foreach\class\in{hanzi,fwpunct,alphanum,halfwidth,boundary,closefw,judou}\do{%
+\@foreach\class\in{hanzi,fwpunct,alphanum,halfwidth,closefw,judou}\do{%,boundary
   \prependinterclasstoks{openfw}{\class}{\mydbgmessage{^^Ja}\zhnobreak}
 }
 % close fullwidth punctuation after other characters
@@ -278,6 +323,46 @@
 \@foreach\class\in{hanzi,fwpunct,alphanum,halfwidth,boundary}\do{%
   \prependinterclasstoks{\class}{judou}{\mydbgmessage{^^Jc}\zhnobreak}
 }
+% boundary special treat
+\prependinterclasstoks{boundary}{openfw}{\mydbgmessage{^^JA0}\zhs@leftpunct@after@boundary{open}}
+\appendinterclasstoks{closefw}{boundary}{\mydbgmessage{^^JB0}\zhs@rightpunct@before@boundary{%
+  \ifnum\zhs@tmpmacro = \getclassnum{closefw}%
+    \getinterclasstoks{closefw}{closefw}%
+  \else
+    \ifnum\zhs@tmpmacro = \getclassnum{judou}%
+      \getinterclasstoks{closefw}{judou}%
+    \else
+      \ifnum\zhs@tmpmacro = \getclassnum{openfw}%
+        \getinterclasstoks{closefw}{openfw}%
+        \zhnobreak\skipnegzhlinestartopen\relax % compensate
+      \else
+        \zhs@rightpunct@before{close}%
+      \fi
+    \fi
+  \fi
+}}
+\appendinterclasstoks{judou}{boundary}{\mydbgmessage{^^JC0}\zhs@rightpunct@before@boundary{%
+  \ifnum\zhs@tmpmacro = \getclassnum{closefw}%
+    \getinterclasstoks{judou}{closefw}%
+  \else
+    \ifnum\zhs@tmpmacro = \getclassnum{judou}%
+      \getinterclasstoks{judou}{judou}%
+    \else
+      \ifnum\zhs@tmpmacro = \getclassnum{openfw}%
+        \getinterclasstoks{judou}{openfw}%
+        \zhnobreak\skipnegzhlinestartopen\relax % compensate
+      \else
+        \zhs@rightpunct@before{judou}%
+      \fi
+    \fi
+  \fi
+}}
+\appendinterclasstoks{openfw}{boundary}{\mydbgmessage{^^Ja0}\zhs@leftpunct@before@boundary{%
+  \ifnum\zhs@tmpmacro = \getclassnum{openfw}%
+    \getinterclasstoks{openfw}{openfw}%
+    \zhnobreak\skipnegzhlinestartopen\relax % compensate
+  \fi
+}}
 % punctuation font change
 \@foreach\class\in{openfw,closefw,judou,fwpunct}\do{%
   \appendinterclasstoks{hanzi}{\class}{\zhpunctfont}
