@@ -40,7 +40,8 @@
 %                       Defined token patterns to simplify settings, haha.
 %		071020	Added ability to deal with space seperated characters.
 %			Added XeTeX existence test. More intelligent parindent
-%			setting.
+%			setting. Fixed bug of English font change through not
+%			using \getinterclasstoks, hmmm.
 % TODO:	1. 	Seperate fullstop and halfstop skips. Currently they are both
 %		treated as judou.
 % Note:	1.	Catcode test requires letter 'a' to be in category 11, and '!' 
@@ -204,10 +205,12 @@
       \skipzh\relax
     \else
       \ifnum\zhs@tmpnum = \getclassnum{closefw}%
-        \getinterclasstoks{hanzi}{closefw}%
+        %\getinterclasstoks{hanzi}{closefw}%
+	\zhnobreak
       \else
         \ifnum\zhs@tmpnum = \getclassnum{judou}%
-          \getinterclasstoks{hanzi}{judou}%
+          %\getinterclasstoks{hanzi}{judou}%
+	  \zhnobreak
         \else
           \ifnum\zhs@tmpnum = \getclassnum{openfw}%
             \zhnobreak\skipnegzhlinestartopen\relax % compensate
@@ -340,13 +343,16 @@
 \prependinterclasstoks{boundary}{openfw}{\mydbgmessage{^^JA0}\zhs@leftpunct@after@boundary{open}}
 \appendinterclasstoks{closefw}{boundary}{\mydbgmessage{^^JB0}\zhs@rightpunct@before@boundary{%
   \ifnum\zhs@tmpnum = \getclassnum{closefw}%
-    \getinterclasstoks{closefw}{closefw}%
+    %\getinterclasstoks{closefw}{closefw}%
+    \zhs@punct@inter{close}%
   \else
     \ifnum\zhs@tmpnum = \getclassnum{judou}%
-      \getinterclasstoks{closefw}{judou}%
+      %\getinterclasstoks{closefw}{judou}%
+      \zhs@punct@inter{close}%
     \else
       \ifnum\zhs@tmpnum = \getclassnum{openfw}%
-        \getinterclasstoks{closefw}{openfw}%
+        %\getinterclasstoks{closefw}{openfw}%
+	\zhs@leftpunct@after@right{open}{close}%
         \zhnobreak\skipnegzhlinestartopen\relax % compensate
       \else
         \zhs@rightpunct@before{close}%
@@ -356,13 +362,16 @@
 }}
 \appendinterclasstoks{judou}{boundary}{\mydbgmessage{^^JC0}\zhs@rightpunct@before@boundary{%
   \ifnum\zhs@tmpnum = \getclassnum{closefw}%
-    \getinterclasstoks{judou}{closefw}%
+    %\getinterclasstoks{judou}{closefw}%
+    \zhs@punct@inter{judou}%
   \else
     \ifnum\zhs@tmpnum = \getclassnum{judou}%
-      \getinterclasstoks{judou}{judou}%
+      %\getinterclasstoks{judou}{judou}%
+      \zhs@punct@inter{judou}%
     \else
       \ifnum\zhs@tmpnum = \getclassnum{openfw}%
-        \getinterclasstoks{judou}{openfw}%
+        %\getinterclasstoks{judou}{openfw}%
+	\zhs@leftpunct@after@right{open}{judou}%
         \zhnobreak\skipnegzhlinestartopen\relax % compensate
       \else
         \zhs@rightpunct@before{judou}%
@@ -372,7 +381,8 @@
 }}
 \appendinterclasstoks{openfw}{boundary}{\mydbgmessage{^^Ja0}\zhs@leftpunct@before@boundary{%
   \ifnum\zhs@tmpnum = \getclassnum{openfw}%
-    \getinterclasstoks{openfw}{openfw}%
+    %\getinterclasstoks{openfw}{openfw}%
+    \zhs@punct@inter{open}%
     \zhnobreak\skipnegzhlinestartopen\relax % compensate
   \fi
 }}
