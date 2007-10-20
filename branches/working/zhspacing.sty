@@ -39,10 +39,23 @@
 %			instead of ifcjkchar. 
 %                       Defined token patterns to simplify settings, haha.
 %		071020	Added ability to deal with space seperated characters.
+%			Added XeTeX existence test. More intelligent parindent
+%			setting.
 % TODO:	1. 	Seperate fullstop and halfstop skips. Currently they are both
 %		treated as judou.
-%	2.	Change \ifcat catcode test to \ifnum\the\catcode.
+% Note:	1.	Catcode test requires letter 'a' to be in category 11, and '!' 
+%		to be in category 12. So don't change the default catcodes.
+%	2.	To speed up processing long Chinese documents, set \skipzh to
+%		empty and \XeTeXinterchartoks 1 1={}. This can save 1/4 time.
+%	3.	\zhspacing will generate a few spaces. Using it in horizontal
+%		mode will produce unwanted skips.
 \catcode`\@=11
+\ifx\XeTeXrevision\@undefined
+  \errmessage{XeTeX required to use zhspacing}%
+\fi
+\ifx\XeTeXinterchartokenstate\@undefined
+  \errmessage{XeTeX 0.997 or above required to use zhspacing}%
+\fi
 \ifx\zhspacingrevision\@undefined
 \def\zhspacingrevision{2007.10.20.}
 \XeTeXlinebreaklocale="zh"
@@ -180,23 +193,23 @@
     \fi
   \fi
 }
-\def\zhs@tmpmacro{-1}
+\def\zhs@tmpnum{-1}
 \def\zhs@testskipenzh{%
-  \chartonum\zhs@tmpchar\zhs@tmpmacro
-  \edef\zhs@tmpmacro{\the\XeTeXcharclass\zhs@tmpmacro}%
-  \ifnum\zhs@tmpmacro = \getclassnum{alphanum}%
+  \chartonum\zhs@tmpchar\zhs@tmpnum
+  \edef\zhs@tmpnum{\the\XeTeXcharclass\zhs@tmpnum}%
+  \ifnum\zhs@tmpnum = \getclassnum{alphanum}%
     \skipenzh\relax
   \else
-    \ifnum\zhs@tmpmacro = \getclassnum{hanzi}%
+    \ifnum\zhs@tmpnum = \getclassnum{hanzi}%
       \skipzh\relax
     \else
-      \ifnum\zhs@tmpmacro = \getclassnum{closefw}%
+      \ifnum\zhs@tmpnum = \getclassnum{closefw}%
         \getinterclasstoks{hanzi}{closefw}%
       \else
-        \ifnum\zhs@tmpmacro = \getclassnum{judou}%
+        \ifnum\zhs@tmpnum = \getclassnum{judou}%
           \getinterclasstoks{hanzi}{judou}%
         \else
-          \ifnum\zhs@tmpmacro = \getclassnum{openfw}%
+          \ifnum\zhs@tmpnum = \getclassnum{openfw}%
             \zhnobreak\skipnegzhlinestartopen\relax % compensate
           \fi
         \fi
@@ -265,8 +278,8 @@
   \fi
 }
 \def\zhs@leftpunct@before@boundary@@{%
-  \chartonum\zhs@tmpchar\zhs@tmpmacro
-  \edef\zhs@tmpmacro{\the\XeTeXcharclass\zhs@tmpmacro}%
+  \chartonum\zhs@tmpchar\zhs@tmpnum
+  \edef\zhs@tmpnum{\the\XeTeXcharclass\zhs@tmpnum}%
   \zhs@tmp
 }
 \def\zhs@leftpunct@after@right#1#2{%
@@ -288,8 +301,8 @@
   \fi
 }
 \def\zhs@rightpunct@before@boundary@@{%
-  \chartonum\zhs@tmpchar\zhs@tmpmacro
-  \edef\zhs@tmpmacro{\the\XeTeXcharclass\zhs@tmpmacro}%
+  \chartonum\zhs@tmpchar\zhs@tmpnum
+  \edef\zhs@tmpnum{\the\XeTeXcharclass\zhs@tmpnum}%
   \zhs@tmp
 }
 % open fullwidth punctuation after other characters
@@ -326,13 +339,13 @@
 % boundary special treat
 \prependinterclasstoks{boundary}{openfw}{\mydbgmessage{^^JA0}\zhs@leftpunct@after@boundary{open}}
 \appendinterclasstoks{closefw}{boundary}{\mydbgmessage{^^JB0}\zhs@rightpunct@before@boundary{%
-  \ifnum\zhs@tmpmacro = \getclassnum{closefw}%
+  \ifnum\zhs@tmpnum = \getclassnum{closefw}%
     \getinterclasstoks{closefw}{closefw}%
   \else
-    \ifnum\zhs@tmpmacro = \getclassnum{judou}%
+    \ifnum\zhs@tmpnum = \getclassnum{judou}%
       \getinterclasstoks{closefw}{judou}%
     \else
-      \ifnum\zhs@tmpmacro = \getclassnum{openfw}%
+      \ifnum\zhs@tmpnum = \getclassnum{openfw}%
         \getinterclasstoks{closefw}{openfw}%
         \zhnobreak\skipnegzhlinestartopen\relax % compensate
       \else
@@ -342,13 +355,13 @@
   \fi
 }}
 \appendinterclasstoks{judou}{boundary}{\mydbgmessage{^^JC0}\zhs@rightpunct@before@boundary{%
-  \ifnum\zhs@tmpmacro = \getclassnum{closefw}%
+  \ifnum\zhs@tmpnum = \getclassnum{closefw}%
     \getinterclasstoks{judou}{closefw}%
   \else
-    \ifnum\zhs@tmpmacro = \getclassnum{judou}%
+    \ifnum\zhs@tmpnum = \getclassnum{judou}%
       \getinterclasstoks{judou}{judou}%
     \else
-      \ifnum\zhs@tmpmacro = \getclassnum{openfw}%
+      \ifnum\zhs@tmpnum = \getclassnum{openfw}%
         \getinterclasstoks{judou}{openfw}%
         \zhnobreak\skipnegzhlinestartopen\relax % compensate
       \else
@@ -358,7 +371,7 @@
   \fi
 }}
 \appendinterclasstoks{openfw}{boundary}{\mydbgmessage{^^Ja0}\zhs@leftpunct@before@boundary{%
-  \ifnum\zhs@tmpmacro = \getclassnum{openfw}%
+  \ifnum\zhs@tmpnum = \getclassnum{openfw}%
     \getinterclasstoks{openfw}{openfw}%
     \zhnobreak\skipnegzhlinestartopen\relax % compensate
   \fi
@@ -434,8 +447,11 @@
   \XeTeXinterchartoks 3 2 = {}
   \XeTeXinterchartoks 3 3 = {}
   \registerXeTeXclasstoks
-  \XeTeXinterchartokenstate=1
-  \parindent=2em
+  \XeTeXinterchartokenstate=1\relax
+  \@ifundefined{LaTeX}{\parindent=2em}{%
+    \setbox0=\hbox{\normalsize\def\zhs@tmp{\kern 2em}\zhs@tmp}%
+    \parindent=\wd0
+  }
   \message{zhspacing installed.^^J}
 }
 \fi
