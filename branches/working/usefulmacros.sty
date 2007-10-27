@@ -41,12 +41,21 @@
 %
 \long\def\@firstoftwo#1#2{#1}
 \long\def\@secondoftwo#1#2{#2}
+\expandafter\ifx\csname ifcsname\endcsname\relax
 \def\@ifundefined#1{%
   \expandafter\ifx\csname#1\endcsname\relax
     \expandafter\@firstoftwo
   \else
     \expandafter\@secondoftwo
   \fi}
+\else
+\def\@ifundefined#1{%
+  \unless\ifcsname#1\endcsname
+    \expandafter\@firstoftwo
+  \else
+    \expandafter\@secondoftwo
+  \fi}
+\fi
 %
 \def\@namedef#1{\expandafter\def\csname #1\endcsname}
 %

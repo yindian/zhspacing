@@ -44,6 +44,8 @@
 %			using \getinterclasstoks, hmmm.
 %                       Seperated fullstop and halfstop skips. They were both
 %		        treated as judou before. Added \halthalfskipscheme.
+%		071027	Fixed bug of \halthalfskipscheme. Added class setting
+%			for some punctuations.
 % Note:	1.	Catcode test requires letter 'a' to be in category 11, and '!' 
 %		to be in category 12. So don't change the default catcodes.
 %	2.	To speed up processing long Chinese documents, set \skipzh to
@@ -139,13 +141,17 @@
   \def\skipzhclose{\hskip 0.0em  plus 0.3em}
   \def\skipzhinterclose{\hskip 0em plus 0.1em}
   \def\skipzhlineendclose{\hskip 0em}
-  \def\skipzhjudou{\hskip 0.0em  plus 0.4em}
-  \def\skipzhinterjudou{\hskip 0em plus 0.1em}
-  \def\skipzhlineendjudou{\hskip -0.1em}
+  \def\skipzhhalfstop{\hskip 0.0em  plus 0.4em}
+  \def\skipzhinterhalfstop{\hskip 0em plus 0.1em}
+  \def\skipzhlineendhalfstop{\hskip -0.15em}
+  \def\skipzhfullstop{\hskip 0.0em  plus 0.4em}
+  \def\skipzhinterfullstop{\hskip 0em plus 0.1em}
+  \def\skipzhlineendfullstop{\hskip -0.15em}
   % neg
   \def\skipnegzhlinestartopen{\hskip 0em}
   \def\skipnegzhlineendclose{\hskip 0em}
-  \def\skipnegzhlineendjudou{\hskip 0.1em}
+  \def\skipnegzhlineendhalfstop{\hskip 0.15em}
+  \def\skipnegzhlineendfullstop{\hskip 0.15em}
 }
 \simsunskipscheme
 %\let\mydbgmessage\message
@@ -514,12 +520,12 @@
 
 \def\zhspacing{%
   \@foreach\character\in{`：,`，,`、}\do{\XeTeXcharclass\character=4}
-  \@foreach\character\in{`。,`．}\do{\XeTeXcharclass\character=10}
+  \@foreach\character\in{`。,`．,`；}\do{\XeTeXcharclass\character=10}
   \@foreach\character\in{`“,`‘}\do{\XeTeXcharclass\character=2}
   \@foreach\character\in{`”,`’}\do{\XeTeXcharclass\character=3}
   \@foreach\character\in{`—,`…}\do{\XeTeXcharclass\character=5}
   \@foreach\character\in{`\!,`\",`\',`\(,`\),`\,,`\-,`\.,`\:,`\;,`\<,`\>,`\?,`\[,`\],`\`,`\{,`\}}\do{\XeTeXcharclass\character=6}
-  \@foreach\character\in{`℃}\do{\XeTeXcharclass\character=7}
+  \@foreach\character\in{`℃,`·}\do{\XeTeXcharclass\character=7}
   % clear XeTeX pre-defined toks
   \XeTeXinterchartoks 0 1 = {}
   \XeTeXinterchartoks 0 2 = {}
