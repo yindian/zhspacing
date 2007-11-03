@@ -46,6 +46,10 @@
 %		        treated as judou before. Added \halthalfskipscheme.
 %		071027	Fixed bug of \halthalfskipscheme. Added class setting
 %			for some punctuations.
+%		071103	Fixed bug of no \skipzh between CJK Ext-A/B chars.
+%			However, due to the current bug of XeTeX, CJK Ext-B
+%			chars may not have a correct \meaning, so having them
+%			after spaces may result in a compiling failure.
 % Note:	1.	Catcode test requires letter 'a' to be in category 11, and '!' 
 %		to be in category 12. So don't change the default catcodes.
 %	2.	To speed up processing long Chinese documents, set \skipzh to
@@ -254,6 +258,14 @@
 	  \else
             \ifnum\zhs@tmpnum = \getclassnum{openfw}%
               \zhnobreak\skipnegzhlinestartopen\relax % compensate
+            \else
+              \ifnum\zhs@tmpnum = \getclassnum{cjkexta}%
+                \skipzh\relax
+              \else
+                \ifnum\zhs@tmpnum = \getclassnum{cjkextb}%
+                  \skipzh\relax
+                \fi
+              \fi
             \fi
 	  \fi
         \fi
@@ -489,8 +501,10 @@
   \prependinterclasstoks{cjkexta}{\class}{\zhfont}
   \prependinterclasstoks{cjkextb}{\class}{\zhfont}
 }
-\setinterclasstoks{cjkexta}{cjkextb}{\zhcjkextbfont}
-\setinterclasstoks{cjkextb}{cjkexta}{\zhcjkextafont}
+\setinterclasstoks{cjkexta}{cjkexta}{\skipzh\relax}
+\setinterclasstoks{cjkexta}{cjkextb}{\zhcjkextbfont\skipzh\relax}
+\setinterclasstoks{cjkextb}{cjkexta}{\zhcjkextafont\skipzh\relax}
+\setinterclasstoks{cjkextb}{cjkextb}{\skipzh\relax}
 {
 \newcount\n
 \n="3400 \loop \ifnum\n<"4E00 \global\XeTeXcharclass\n=8 \advance\n by 1\repeat
