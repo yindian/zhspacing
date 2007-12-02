@@ -52,6 +52,7 @@
 %			after spaces may result in a compiling failure.
 %		071117	Use \ifzhs@isvalidchar to avoid the XeTeX \meaning
 %			bug. Added \ProvidesPackage when under LaTeX.
+%		071202	Fixed bug of wrong \ProvidesPackage in plain TeX.
 % Note:	1.	Catcode test requires letter 'a' to be in category 11, and '!' 
 %		to be in category 12. So don't change the default catcodes.
 %	2.	To speed up processing long Chinese documents, set \skipzh to
@@ -66,8 +67,9 @@
   \errmessage{XeTeX 0.997 or above required to use zhspacing}%
 \fi
 \ifx\zhspacingrevision\@undefined
-\def\zhspacingrevision{2007.10.20.}
+\def\zhspacingrevision{2007/12/02}
 \ifx\LaTeX\@undefined
+\else
   \ProvidesPackage{zhspacing}[\zhspacingrevision]
 \fi
 \XeTeXlinebreaklocale="zh"
@@ -347,7 +349,11 @@
 }
 \def\zhs@leftpunct@before@boundary@@{%
   \chartonum\zhs@tmpchar\zhs@tmpnum
-  \edef\zhs@tmpnum{\the\XeTeXcharclass\zhs@tmpnum}%
+  \expandafter\ifzhs@isvalidchar\zhs@tmpnum??\ok
+    \edef\zhs@tmpnum{\the\XeTeXcharclass\zhs@tmpnum}%
+  \else
+    \edef\zhs@tmpnum{\getclassnum{cjkextb}}%
+  \fi
   \zhs@tmp
 }
 \def\zhs@leftpunct@after@right#1#2{%
@@ -370,7 +376,11 @@
 }
 \def\zhs@rightpunct@before@boundary@@{%
   \chartonum\zhs@tmpchar\zhs@tmpnum
-  \edef\zhs@tmpnum{\the\XeTeXcharclass\zhs@tmpnum}%
+  \expandafter\ifzhs@isvalidchar\zhs@tmpnum??\ok
+    \edef\zhs@tmpnum{\the\XeTeXcharclass\zhs@tmpnum}%
+  \else
+    \edef\zhs@tmpnum{\getclassnum{cjkextb}}%
+  \fi
   \zhs@tmp
 }
 % open fullwidth punctuation after other characters
