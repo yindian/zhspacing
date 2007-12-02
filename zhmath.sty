@@ -1,0 +1,59 @@
+%	zhmath.sty	coded by YIN Dian
+%	Use basic CJK characters in math environment.
+%	Hist:	071202	First coded.
+\catcode`\@=11
+\ifx\zhspacingrevision\@undefined
+\input zhspacing.sty
+\fi
+
+\def\zhmath@setXeTeXmathcodefam#1#2#3{%
+  % set #1..#2's math family to #3
+  \count@=#1%
+  \loop
+    \XeTeXmathcode\count@=7 #3 \count@
+    \unless\ifnum\count@>#2%
+      \advance\count@ by 1
+  \repeat
+}
+
+\def\zhmath@setactivemathchar#1#2#3#4#5#6{%
+  % set #1..#2 to active math chars, executing \mathchoice #3 #4 #5 #6.
+  \count@=#1%
+  \loop
+    \mathcode\count@="8000
+    {\catcode\count@=\active\lccode`\~=\count@
+      \lowercase{\xdef~{{\mathchoice{\noexpand#3{\number\count@}}%
+      {\noexpand#4{\number\count@}}{\noexpand#5{\number\count@}}
+      {\noexpand#6{\number\count@}}}}}%
+    }%
+    \unless\ifnum\count@>#2%
+      \advance\count@ by 1
+  \repeat
+}
+
+\unless\ifdefined\DeclareSymbolFont   %in plain TeX
+\font\zhmath@tensong="SimSun" at 10pt
+\font\zhmath@sevensong="SimSun" at 7pt
+\font\zhmath@fivesong="SimSun" at 5pt
+
+\newfam\zhmath@song
+\textfont\zhmath@song=\zhmath@tensong
+\scriptfont\zhmath@song=\zhmath@sevensong
+\scriptscriptfont\zhmath@song=\zhmath@fivesong
+
+\zhmath@setXeTeXmathcodefam{"2E80}{"9FFF}{\zhmath@song}
+\else 	% in LaTeX, similar to mathcjk
+
+\def\mathcjksizea{}
+\def\mathcjksizeb{}
+\def\mathcjksizec{\footnotesize}
+\def\mathcjksized{\footnotesize}
+
+\def\zhmath@zhfont@disp#1{{\hbox{\zhfont\mathcjksizea     #1\relax}}}
+\def\zhmath@zhfont@text#1{{\hbox{\zhfont\mathcjksizeb     #1\relax}}}
+\def\zhmath@zhfont@scrp#1{{\hbox{\zhfont\mathcjksizec     #1\relax}}}
+\def\zhmath@zhfont@subs#1{{\hbox{\zhfont\mathcjksized     #1\relax}}}
+
+\zhmath@setactivemathchar{"2E80}{"9FFF}{\zhmath@zhfont@disp}%
+  {\zhmath@zhfont@text}{\zhmath@zhfont@scrp}{\zhmath@zhfont@subs}
+\fi
