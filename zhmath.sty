@@ -1,6 +1,7 @@
 %	zhmath.sty	coded by YIN Dian
 %	Use basic CJK characters in math environment.
 %	Hist:	071202	First coded.
+%		071204	Set \XeTeXinterchartokenstate=0 to avoid a XeTeX bug.
 \catcode`\@=11
 \ifx\zhspacingrevision\@undefined
 \input zhspacing.sty
@@ -46,13 +47,13 @@
 
 \def\mathcjksizea{}
 \def\mathcjksizeb{}
-\def\mathcjksizec{\footnotesize}
-\def\mathcjksized{\footnotesize}
+\def\mathcjksizec{\scriptsize}
+\def\mathcjksized{\scriptsize}
 
-\def\zhmath@zhfont@disp#1{{\hbox{\zhfont\mathcjksizea     #1\relax}}}
-\def\zhmath@zhfont@text#1{{\hbox{\zhfont\mathcjksizeb     #1\relax}}}
-\def\zhmath@zhfont@scrp#1{{\hbox{\zhfont\mathcjksizec     #1\relax}}}
-\def\zhmath@zhfont@subs#1{{\hbox{\zhfont\mathcjksized     #1\relax}}}
+\def\zhmath@zhfont@disp#1{{\hbox{\XeTeXinterchartokenstate=0\zhfont\mathcjksizea\char#1\relax}}}
+\def\zhmath@zhfont@text#1{{\hbox{\XeTeXinterchartokenstate=0\zhfont\mathcjksizeb\char#1\relax}}}
+\def\zhmath@zhfont@scrp#1{{\hbox{\XeTeXinterchartokenstate=0\zhfont\mathcjksizec\char#1\relax}}}
+\def\zhmath@zhfont@subs#1{{\hbox{\XeTeXinterchartokenstate=0\zhfont\mathcjksized\char#1\relax}}}
 
 \zhmath@setactivemathchar{"2E80}{"9FFF}{\zhmath@zhfont@disp}%
   {\zhmath@zhfont@text}{\zhmath@zhfont@scrp}{\zhmath@zhfont@subs}
