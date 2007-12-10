@@ -6,6 +6,7 @@
 %		070809	Removed unnecessary \global's.
 %               070810  Only register non-empty tokens.
 %		071019	Added \getclassnum
+%		071210	Changed \@foreach to \@for.
 \catcode`\@=11
 \ifx\@myclass@defined\@undefined
 \def\@myclass@defined{\relax}
@@ -26,7 +27,7 @@
   \@ifundefined{@@classname@#2}{% if
     \@namedef{@@classname@#2}{\relax}%
     \@namedef{@@baseclass@#2}{#1}%
-    \@foreach\@@class\in\@class@list\do{% for
+    \@for\@@class:=\@class@list\do{% for
       \if!\@@class!
       \else
         \@newinterclasstoks{#2}{\@@class}%
@@ -49,7 +50,7 @@
   \fi
   \@ifundefined{@@classname@#1}{% if
     \@namedef{@@classname@#1}{\relax}%
-    \@foreach\@@class\in\@class@list\do{% for
+    \@for\@@class:=\@class@list\do{% for
       \if!\@@class!
       \else
         \@newinterclasstoks{#1}{\@@class}%
@@ -95,10 +96,10 @@
 \def\showallinterclasstoks{%
   \par
   \begingroup
-  \@foreach\class\in\@class@list\do{%
+  \@for\class:=\@class@list\do{%
      \if!\class!
      \else
-       \@foreach\anotherclass\in\@class@list\do{%
+       \@for\anotherclass:=\@class@list\do{%
          \if!\anotherclass!
          \else
            [\class, \anotherclass]: %\csname @@interclasstoks@\class @\anotherclass\endcsname
@@ -112,16 +113,16 @@
 }
 \newlinechar`\^^J
 \def\setclassnum#1#2{%
-  \expandafter\chardef\csname @@classnum@#1\endcsname=#2
+  \expandafter\chardef\csname @@classnum@#1\endcsname=#2\relax
 }
 \def\getclassnum#1{%
   \csname @@classnum@#1\endcsname
 }
 \def\mydbgmessag@#1{}
 \def\registerXeTeXclasstoks{%
-  \@foreach\class\in\@class@list\do{%
+  \@for\class:=\@class@list\do{%
     \@ifundefined{@@classnum@\class}{}{%
-      \@foreach\anotherclass\in\@class@list\do{%
+      \@for\anotherclass:=\@class@list\do{%
         \@ifundefined{@@classnum@\anotherclass}{}{%
           \edef\@@temp@macro{\the\csname @@interclasstoks@\class @\anotherclass\endcsname}%
           \ifx\@@temp@macro\empty

@@ -53,6 +53,9 @@
 %		071117	Use \ifzhs@isvalidchar to avoid the XeTeX \meaning
 %			bug. Added \ProvidesPackage when under LaTeX.
 %		071202	Fixed bug of wrong \ProvidesPackage in plain TeX.
+%		071210	Changed usefulmacros.sty. Removed \@foreach because I
+%			find they are redundant --- \@for already has
+%			\expandafter #2. Improved LaTeX detecting.
 % Note:	1.	Catcode test requires letter 'a' to be in category 11, and '!' 
 %		to be in category 12. So don't change the default catcodes.
 %	2.	To speed up processing long Chinese documents, set \skipzh to
@@ -68,8 +71,8 @@
 \fi
 \ifx\zhspacingrevision\@undefined
 \def\zhspacingrevision{2007/12/02}
-\ifx\LaTeX\@undefined
-\else
+\input usefulmacros.sty
+\ifLaTeX@e
   \ProvidesPackage{zhspacing}[\zhspacingrevision]
 \fi
 \XeTeXlinebreaklocale="zh"
@@ -201,8 +204,11 @@
   \def\zhs@savefont{\zhs@savef@nt{old}}
   \def\zhs@restorefont{\zhs@restoref@nt{old}}
 }
-\input usefulmacros.sty
-\@ifundefined{LaTeX}{\zhgroupsavefont}{\zhnfsssavefont}
+\ifLaTeX@e
+  \zhnfsssavefont
+\else
+  \zhgroupsavefont
+\fi
 
 % test CJK char
 \def\chartonum#1#2{% #1: an explicit or implicit char; #2: return macro
@@ -384,7 +390,7 @@
   \zhs@tmp
 }
 % open fullwidth punctuation after other characters
-\@foreach\class\in{hanzi,fwpunct,alphanum,halfwidth}\do{%,boundary
+\@for\class:={hanzi,fwpunct,alphanum,halfwidth}\do{%,boundary
   \prependinterclasstoks{\class}{openfw}{\mydbgmessage{^^JA1}\zhs@leftpunct@after{open}}
 }
 \setinterclasstoks{openfw}{openfw}{\mydbgmessage{^^JA2}\zhs@punct@inter{open}}
@@ -392,40 +398,40 @@
 \setinterclasstoks{halfstop}{openfw}{\mydbgmessage{^^JA4}\zhs@leftpunct@after@right{open}{halfstop}}
 \setinterclasstoks{fullstop}{openfw}{\mydbgmessage{^^JA4}\zhs@leftpunct@after@right{open}{fullstop}}
 % close fullwidth punctuation before other characters
-\@foreach\class\in{hanzi,fwpunct,alphanum,halfwidth}\do{%,boundary
+\@for\class:={hanzi,fwpunct,alphanum,halfwidth}\do{%,boundary
   \prependinterclasstoks{closefw}{\class}{\mydbgmessage{^^JB1}\zhs@rightpunct@before{close}}
 }
 \setinterclasstoks{closefw}{closefw}{\mydbgmessage{^^JB2}\zhs@punct@inter{close}}
 \setinterclasstoks{closefw}{halfstop}{\mydbgmessage{^^JB3}\zhs@punct@inter{close}}
 \setinterclasstoks{closefw}{fullstop}{\mydbgmessage{^^JB3}\zhs@punct@inter{close}}
 % halfstop punctuation before other characters
-\@foreach\class\in{hanzi,fwpunct,alphanum,halfwidth}\do{%,boundary
+\@for\class:={hanzi,fwpunct,alphanum,halfwidth}\do{%,boundary
   \prependinterclasstoks{halfstop}{\class}{\mydbgmessage{^^JC1}\zhs@rightpunct@before{halfstop}}
 }
 \setinterclasstoks{halfstop}{closefw}{\mydbgmessage{^^Jb2}\zhs@punct@inter{halfstop}}
 \setinterclasstoks{halfstop}{halfstop}{\mydbgmessage{^^JC2}\zhs@punct@inter{halfstop}}
 \setinterclasstoks{halfstop}{fullstop}{\mydbgmessage{^^JC2}\zhs@punct@inter{halfstop}}
 % fullstop punctuation before other characters
-\@foreach\class\in{hanzi,fwpunct,alphanum,halfwidth}\do{%,boundary
+\@for\class:={hanzi,fwpunct,alphanum,halfwidth}\do{%,boundary
   \prependinterclasstoks{fullstop}{\class}{\mydbgmessage{^^JC1}\zhs@rightpunct@before{fullstop}}
 }
 \setinterclasstoks{fullstop}{closefw}{\mydbgmessage{^^Jb2}\zhs@punct@inter{fullstop}}
 \setinterclasstoks{fullstop}{halfstop}{\mydbgmessage{^^JC2}\zhs@punct@inter{fullstop}}
 \setinterclasstoks{fullstop}{fullstop}{\mydbgmessage{^^JC2}\zhs@punct@inter{fullstop}}
 % open fullwidth punctuation before other characters
-\@foreach\class\in{hanzi,fwpunct,alphanum,halfwidth,closefw,halfstop,fullstop}\do{%,boundary
+\@for\class:={hanzi,fwpunct,alphanum,halfwidth,closefw,halfstop,fullstop}\do{%,boundary
   \prependinterclasstoks{openfw}{\class}{\mydbgmessage{^^Ja}\zhnobreak}
 }
 % close fullwidth punctuation after other characters
-\@foreach\class\in{hanzi,fwpunct,alphanum,halfwidth,boundary}\do{%
+\@for\class:={hanzi,fwpunct,alphanum,halfwidth,boundary}\do{%
   \prependinterclasstoks{\class}{closefw}{\mydbgmessage{^^Jb}\zhnobreak}
 }
 % halfstop punctuation after other characters
-\@foreach\class\in{hanzi,fwpunct,alphanum,halfwidth,boundary}\do{%
+\@for\class:={hanzi,fwpunct,alphanum,halfwidth,boundary}\do{%
   \prependinterclasstoks{\class}{halfstop}{\mydbgmessage{^^Jc}\zhnobreak}
 }
 % fullstop punctuation after other characters
-\@foreach\class\in{hanzi,fwpunct,alphanum,halfwidth,boundary}\do{%
+\@for\class:={hanzi,fwpunct,alphanum,halfwidth,boundary}\do{%
   \prependinterclasstoks{\class}{fullstop}{\mydbgmessage{^^Jc}\zhnobreak}
 }
 % boundary special treat
@@ -504,7 +510,7 @@
   \fi
 }}
 % punctuation font change
-\@foreach\class\in{openfw,closefw,halfstop,fullstop,fwpunct}\do{%
+\@for\class:={openfw,closefw,halfstop,fullstop,fwpunct}\do{%
   \appendinterclasstoks{hanzi}{\class}{\zhpunctfont}
   \appendinterclasstoks{\class}{hanzi}{\zhfont}
   \appendinterclasstoks{boundary}{\class}{\zhpunctfont}
@@ -515,7 +521,7 @@
 \setclassnum{cjkexta}{8}
 \newclass[hanzi]{cjkextb}
 \setclassnum{cjkextb}{9}
-\@foreach\class\in{hanzi,fwpunct,openfw,closefw,halfstop,fullstop,alphanum,halfwidth,boundary}\do{%
+\@for\class:={hanzi,fwpunct,openfw,closefw,halfstop,fullstop,alphanum,halfwidth,boundary}\do{%
   \appendinterclasstoks{\class}{cjkexta}{\zhcjkextafont}
   \appendinterclasstoks{\class}{cjkextb}{\zhcjkextbfont}
   \prependinterclasstoks{cjkexta}{\class}{\zhfont}
@@ -539,27 +545,27 @@
 \setclassnum{hwpunct}{6}
 
 % Font settings
-\@ifundefined{LaTeX}{%
-  \@ifundefined{zhfont}{\font\zhfont="SimSun" at 10pt}{}
-  \@ifundefined{zhpunctfont}{\font\zhpunctfont="SimSun" at 10pt}{}
-  \@ifundefined{zhcjkextafont}{\def\zhcjkextafont{\message{CJK Ext-A}}}{}
-  \@ifundefined{zhcjkextbfont}{\def\zhcjkextbfont{\message{CJK Ext-B}}}{}
-}{%
+\ifLaTeX@e
   \RequirePackage{fontspec}
   \@ifundefined{zhfont}{\newfontfamily\zhfont[BoldFont=SimHei]{SimSun}}{}
   \@ifundefined{zhpunctfont}{\newfontfamily\zhpunctfont{SimSun}}{}
   \@ifundefined{zhcjkextafont}{\def\zhcjkextafont{\message{CJK Ext-A}}}{}
   \@ifundefined{zhcjkextbfont}{\def\zhcjkextbfont{\message{CJK Ext-B}}}{}
-}
+\else
+  \@ifundefined{zhfont}{\font\zhfont="SimSun" at 10pt}{}
+  \@ifundefined{zhpunctfont}{\font\zhpunctfont="SimSun" at 10pt}{}
+  \@ifundefined{zhcjkextafont}{\def\zhcjkextafont{\message{CJK Ext-A}}}{}
+  \@ifundefined{zhcjkextbfont}{\def\zhcjkextbfont{\message{CJK Ext-B}}}{}
+\fi
 
 \def\zhspacing{%
-  \@foreach\character\in{`：,`，,`、}\do{\XeTeXcharclass\character=4}
-  \@foreach\character\in{`。,`．,`；}\do{\XeTeXcharclass\character=10}
-  \@foreach\character\in{`“,`‘}\do{\XeTeXcharclass\character=2}
-  \@foreach\character\in{`”,`’}\do{\XeTeXcharclass\character=3}
-  \@foreach\character\in{`—,`…}\do{\XeTeXcharclass\character=5}
-  \@foreach\character\in{`\!,`\",`\',`\(,`\),`\,,`\-,`\.,`\:,`\;,`\<,`\>,`\?,`\[,`\],`\`,`\{,`\}}\do{\XeTeXcharclass\character=6}
-  \@foreach\character\in{`℃,`·}\do{\XeTeXcharclass\character=7}
+  \@for\character:={`：,`，,`、}\do{\XeTeXcharclass\character=4}
+  \@for\character:={`。,`．,`；}\do{\XeTeXcharclass\character=10}
+  \@for\character:={`“,`‘}\do{\XeTeXcharclass\character=2}
+  \@for\character:={`”,`’}\do{\XeTeXcharclass\character=3}
+  \@for\character:={`—,`…}\do{\XeTeXcharclass\character=5}
+  \@for\character:={`\!,`\",`\',`\(,`\),`\,,`\-,`\.,`\:,`\;,`\<,`\>,`\?,`\[,`\],`\`,`\{,`\}}\do{\XeTeXcharclass\character=6}
+  \@for\character:={`℃,`·}\do{\XeTeXcharclass\character=7}
   % clear XeTeX pre-defined toks
   \XeTeXinterchartoks 0 1 = {}
   \XeTeXinterchartoks 0 2 = {}
@@ -578,10 +584,12 @@
   \XeTeXinterchartoks 3 3 = {}
   \registerXeTeXclasstoks
   \XeTeXinterchartokenstate=1\relax
-  \@ifundefined{LaTeX}{\parindent=2em}{%
+  \ifLaTeX@e
     \setbox0=\hbox{\normalsize\def\zhs@tmp{\kern 2em}\zhs@tmp}%
     \parindent=\wd0
-  }
+  \else
+    \parindent=2em\relax
+  \fi
   \message{zhspacing installed.^^J}
 }
 \fi
