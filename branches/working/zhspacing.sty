@@ -56,6 +56,7 @@
 %		071210	Changed usefulmacros.sty. Removed \@foreach because I
 %			find they are redundant --- \@for already has
 %			\expandafter #2. Improved LaTeX detecting.
+%		071211	Minor change on \simsunskipscheme.
 % Note:	1.	Catcode test requires letter 'a' to be in category 11, and '!' 
 %		to be in category 12. So don't change the default catcodes.
 %	2.	To speed up processing long Chinese documents, set \skipzh to
@@ -70,7 +71,7 @@
   \errmessage{XeTeX 0.997 or above required to use zhspacing}%
 \fi
 \ifx\zhspacingrevision\@undefined
-\def\zhspacingrevision{2007/12/10}
+\def\zhspacingrevision{2007/12/11}
 \input usefulmacros.sty
 \ifLaTeX@e
   \ProvidesPackage{zhspacing}[\zhspacingrevision]
@@ -82,16 +83,16 @@
   % my skip
   \def\skipzh{\hskip 0em plus 0.2em minus 0.1em}
   \def\skipenzh{\hskip 0.25em plus 0.15em minus 0.05em}
-  \def\skipzhopen{\hskip -0.1em plus 0.1em minus 0.2em}
+  \def\skipzhopen{\hskip -0.0em plus 0.0em minus 0.3em}
   \def\skipzhinteropen{\hskip -0.3em plus 0.1em minus 0.1em}
   \def\skipzhlinestartopen{\hskip -0.35em}
-  \def\skipzhclose{\hskip -0.1em  plus 0.1em minus 0.2em}
+  \def\skipzhclose{\hskip -0.0em  plus 0.0em minus 0.3em}
   \def\skipzhinterclose{\hskip -0.3em plus 0.1em minus 0.1em}
   \def\skipzhlineendclose{\hskip -0.35em}
-  \def\skipzhhalfstop{\hskip -0.1em  plus 0.1em minus 0.4em}
+  \def\skipzhhalfstop{\hskip -0.0em  plus 0.0em minus 0.5em}
   \def\skipzhinterhalfstop{\hskip -0.3em plus 0.1em minus 0.1em}
   \def\skipzhlineendhalfstop{\hskip -0.6em}
-  \def\skipzhfullstop{\hskip -0.1em  plus 0.1em minus 0.4em}
+  \def\skipzhfullstop{\hskip -0.0em  plus 0.0em minus 0.5em}
   \def\skipzhinterfullstop{\hskip -0.3em plus 0.1em minus 0.1em}
   \def\skipzhlineendfullstop{\hskip -0.575em}
   % neg

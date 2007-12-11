@@ -5,7 +5,7 @@
 %			\newfontfamilywithslantandbold to simplify setting.
 %		071211	Added fake bold support.
 \NeedsTeXFormat{LaTeX2e}[1996/12/01]
-\def\filedate{2007/12/10}
+\def\filedate{2007/12/11}
 \ProvidesPackage{zhfont}[\filedate]
 \RequirePackage{zhspacing}
 \newif\ifzhfont@fakebold
@@ -14,7 +14,7 @@
 \ProcessOptions\relax
 
 \def\zhs@tmpmacro{}
-\def\zhs@curr@fam{}
+\def\zhs@curr@fam{-1}
 
 \zhnfsssavefont
 \g@addto@macro\zhs@savefont{%

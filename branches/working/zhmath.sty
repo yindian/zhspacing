@@ -8,6 +8,8 @@
 %			Added ability to set alpha and number fonts.
 %		071211	Put \setalphanummathfonts in preamble so that
 %			\usecustommathfonts can be used in document in LaTeX.
+%			Changed \hbox to \mbox. Changed default option to
+%			noactive.
 \catcode`\@=11
 \ifx\zhmath@defined\@undefined
 \def\zhmath@defined{\relax}
@@ -47,7 +49,7 @@
 \ProvidesPackage{zhmath}[\filedate]
 \DeclareOption{active}{\zhmath@activetrue}
 \DeclareOption{noactive}{\zhmath@activefalse}
-\zhmath@activetrue
+\zhmath@activefalse
 \ProcessOptions\relax
 
 \def\mathcjksizea{}
@@ -58,10 +60,10 @@
 \@ifundefined{zhmathfont}{\newfontfamily\zhmathfont{SimSun}}{}
 
 \ifzhmath@active
-  \def\zhmath@zhfont@disp#1{{\hbox{\XeTeXinterchartokenstate=0\zhmathfont\mathcjksizea\char#1\relax}}}
-  \def\zhmath@zhfont@text#1{{\hbox{\XeTeXinterchartokenstate=0\zhmathfont\mathcjksizeb\char#1\relax}}}
-  \def\zhmath@zhfont@scrp#1{{\hbox{\XeTeXinterchartokenstate=0\zhmathfont\mathcjksizec\char#1\relax}}}
-  \def\zhmath@zhfont@subs#1{{\hbox{\XeTeXinterchartokenstate=0\zhmathfont\mathcjksized\char#1\relax}}}
+  \def\zhmath@zhfont@disp#1{{\mbox{\XeTeXinterchartokenstate=0\zhmathfont\mathcjksizea\char#1\relax}}}
+  \def\zhmath@zhfont@text#1{{\mbox{\XeTeXinterchartokenstate=0\zhmathfont\mathcjksizeb\char#1\relax}}}
+  \def\zhmath@zhfont@scrp#1{{\mbox{\XeTeXinterchartokenstate=0\zhmathfont\mathcjksizec\char#1\relax}}}
+  \def\zhmath@zhfont@subs#1{{\mbox{\XeTeXinterchartokenstate=0\zhmathfont\mathcjksized\char#1\relax}}}
   
   \zhmath@setactivemathchar{"2E80}{"9FFF}{\zhmath@zhfont@disp}%
     {\zhmath@zhfont@text}{\zhmath@zhfont@scrp}{\zhmath@zhfont@subs}
