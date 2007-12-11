@@ -6,10 +6,12 @@
 %		071210	Added another method to set Chinese math fonts in
 %			LaTeX, via option noactive. Improved format detection.
 %			Added ability to set alpha and number fonts.
+%		071211	Put \setalphanummathfonts in preamble so that
+%			\usecustommathfonts can be used in document in LaTeX.
 \catcode`\@=11
 \ifx\zhmath@defined\@undefined
 \def\zhmath@defined{\relax}
-\def\filedate{2007/12/04}
+\def\filedate{2007/12/11}
 \ifx\zhspacingrevision\@undefined
 \input zhspacing.sty
 \fi
@@ -93,9 +95,9 @@
   \SetSymbolFont{@letter}{bold}{\zhmath@@fenc}{\zhmath@@ffam}{bx}{it}%
   \SetSymbolFont{@number}{bold}{\zhmath@@fenc}{\zhmath@@ffam}{bx}{n}%
 }
-\def\usecustomalphanumfonts{%
-  \@ifundefined{zhmathalphanumfont}{\newfontfamily\zhmathalphanumfont{Times New Roman}}{}
-  \setalphanummathfonts\zhmathalphanumfont
+\@ifundefined{zhmathalphanumfont}{\newfontfamily\zhmathalphanumfont{Times New Roman}}{}
+\setalphanummathfonts\zhmathalphanumfont
+\def\usecustommathfonts{%
   \zhmath@setXeTeXmathcodefam{`\0}{`\9}{\sym@number}
   \zhmath@setXeTeXmathcodefam{`\a}{`\z}{\sym@letter}
   \zhmath@setXeTeXmathcodefam{`\A}{`\Z}{\sym@letter}
@@ -127,7 +129,7 @@
 
 \zhmath@setXeTeXmathcodefam{"2E80}{"9FFF}{\zhmath@fam}
 
-\def\usecustomalphanumfonts{%
+\def\usecustommathfonts{%
   \@ifundefined{zhmathletterfont}{\font\zhmathletterfont="Times New Roman/I" at 10pt}{}
   \@ifundefined{zhmathnumberfont}{\font\zhmathnumberfont="Times New Roman" at 10pt}{}
   \setalphanummathfonts\zhmathletterfont\zhmathnumberfont
