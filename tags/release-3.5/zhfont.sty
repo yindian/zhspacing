@@ -1,0 +1,74 @@
+%	zhfont.sty	coded by YIN Dian
+%	Simplify setting various font effects
+%	Hist:	071204	First coded.
+%		071210	Improved. Added \newfontfamilywithslant and
+%			\newfontfamilywithslantandbold to simplify setting.
+%		071211	Added fake bold support.
+\NeedsTeXFormat{LaTeX2e}[1996/12/01]
+\def\filedate{2007/12/11}
+\ProvidesPackage{zhfont}[\filedate]
+\RequirePackage{zhspacing}
+\newif\ifzhfont@fakebold
+\zhfont@fakeboldfalse
+\DeclareOption{fakebold}{\zhfont@fakeboldtrue}
+\ProcessOptions\relax
+
+\def\zhs@tmpmacro{}
+\def\zhs@curr@fam{-1}
+
+\zhnfsssavefont
+\g@addto@macro\zhs@savefont{%
+  \long\edef\zhs@tmpmacro{\f@family}%
+  \def\zhs@curr@fam{0}%
+  \ifx\zhs@tmpmacro\sfdefault
+    \def\zhs@curr@fam{1}%
+  \else\ifx\zhs@tmpmacro\ttdefault
+    \def\zhs@curr@fam{2}%
+  \fi\fi
+  \edef\zhs@tmpmacro{\f@family}%
+  \ifx\zhs@tmpmacro\sfdefault
+    \def\zhs@curr@fam{1}%
+  \else\ifx\zhs@tmpmacro\ttdefault
+    \def\zhs@curr@fam{2}%
+  \fi\fi
+}
+\ifzhfont@fakebold
+\def\zhfont@bx{bx}
+\g@addto@macro\zhs@savefont{%
+  \ifx\f@series\zhfont@bx
+    \special{pdf: literal direct q 0.3 w 2 Tr}%
+  \fi
+}
+\g@addto@macro\zhs@restorefont{%
+  \ifx\f@series\zhfont@bx
+    \special{pdf: literal direct 0 Tr}%
+  \fi
+}
+\fi
+
+\def\newfontfamilywithslant#1#2{%
+  \newfontfamily#1[ItalicFont=#2,ItalicFeatures={RawFeature={slant=0.17}},BoldItalicFont=#2,BoldItalicFeatures={RawFeature={slant=0.17}}]{#2}%
+}
+\def\newfontfamilywithslantandbold#1#2#3{%
+  \newfontfamily#1[BoldFont=#3,ItalicFont=#2,ItalicFeatures={RawFeature={slant=0.17}},BoldItalicFont=#3,BoldItalicFeatures={RawFeature={slant=0.17}}]{#2}%
+}
+
+%\newfontfamily\zhrmfont[BoldFont=SimHei,ItalicFont=SimSun,ItalicFeatures={RawFeature={slant=0.17}},BoldItalicFont=SimHei,BoldItalicFeatures={RawFeature={slant=0.17}}]{SimSun}
+%\newfontfamily\zhsffont[ItalicFont=SimHei,ItalicFeatures={RawFeature={slant=0.17}}]{SimHei}
+%\newfontfamily\zhttfont[BoldFont=KaiTi_GB2312,ItalicFont=FangSong_GB2312,ItalicFeatures={RawFeature={slant=0.17}},BoldItalicFont=KaiTi_GB2312,BoldItalicFeatures={RawFeature={slant=0.17}}]{FangSong_GB2312}
+\ifzhfont@fakebold
+\newfontfamilywithslant\zhrmfont{SimSun}
+\newfontfamilywithslant\zhsffont{SimHei}
+\newfontfamilywithslant\zhttfont{FangSong_GB2312}
+\else
+\newfontfamilywithslantandbold\zhrmfont{SimSun}{SimHei}
+\newfontfamilywithslant\zhsffont{SimHei}
+\newfontfamilywithslantandbold\zhttfont{FangSong_GB2312}{KaiTi_GB2312}
+\fi
+\def\zhfont{\ifcase\zhs@curr@fam\zhrmfont\or\zhsffont\or\zhttfont\fi}
+
+\def\setzhmainfont{\newfontfamily\zhrmfont}
+\def\setzhsansfont{\newfontfamily\zhsffont}
+\def\setzhmonofont{\newfontfamily\zhttfont}
+
+\endinput
