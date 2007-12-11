@@ -1,7 +1,14 @@
+%	usefulmacros.sty
+%	This file provides several useful LaTeX macros as well as \ifLaTeX@e,
+%	and \futurenonspacelet.
+%	Licensed under LPPL.
 \catcode`\@=11
 \ifx\@usefulmacros@defined\@undefined
 \def\@usefulmacros@defined{\relax}
-\ifx\LaTeX\@undefined
+\def\@usefulmacros@LaTeX@e{LaTeX2e}
+\def\ifLaTeX@e{\ifx\fmtname\@usefulmacros@LaTeX@e}
+%\ifx\LaTeX\@undefined
+\ifLaTeX@e\else
 \def\@nnil{\@nil}%
 \def\@empty{}%
 \def\@fornoop#1\@@#2#3{}%
@@ -68,13 +75,6 @@
 \def\newread{\alloc@6\read\chardef\sixt@@n}
 \def\newwrite{\alloc@7\write\chardef\sixt@@n}
 \fi % end if
-
-\long\def\@foreach#1\in#2\do#3{%
-  \expandafter\@for\expandafter#1\expandafter:\expandafter=#2\do{#3}%
-}
-\long\def\@tforeach#1\in#2\do#3{%
-  \expandafter\@tfor\expandafter#1\expandafter:\expandafter=#2\do{#3}%
-}
 
 \def\@BTcs{}
 \let\nexttoken\relax
