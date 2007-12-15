@@ -10,10 +10,13 @@
 %			\usecustommathfonts can be used in document in LaTeX.
 %			Changed \hbox to \mbox. Changed default option to
 %			noactive.
+%		071215	Removed \XeTeXinterchartokenstate=0, as the XeTeX bug
+%			is fixed by JK. Changed \mathcjksizec/d to fit the 
+%			main text size.
 \catcode`\@=11
 \ifx\zhmath@defined\@undefined
 \def\zhmath@defined{\relax}
-\def\filedate{2007/12/11}
+\def\filedate{2007/12/15}
 \ifx\zhspacingrevision\@undefined
 \input zhspacing.sty
 \fi
@@ -54,16 +57,16 @@
 
 \def\mathcjksizea{}
 \def\mathcjksizeb{}
-\def\mathcjksizec{\scriptsize}
-\def\mathcjksized{\scriptsize}
+\def\mathcjksizec{\dimen@=\dimexpr\f@size pt*6/10\relax\fontsize{\dimen@}{\dimen@}}
+\def\mathcjksized{\dimen@=\dimexpr\f@size pt*5/10\relax\fontsize{\dimen@}{\dimen@}}
 
 \@ifundefined{zhmathfont}{\newfontfamily\zhmathfont{SimSun}}{}
 
 \ifzhmath@active
-  \def\zhmath@zhfont@disp#1{{\mbox{\XeTeXinterchartokenstate=0\zhmathfont\mathcjksizea\char#1\relax}}}
-  \def\zhmath@zhfont@text#1{{\mbox{\XeTeXinterchartokenstate=0\zhmathfont\mathcjksizeb\char#1\relax}}}
-  \def\zhmath@zhfont@scrp#1{{\mbox{\XeTeXinterchartokenstate=0\zhmathfont\mathcjksizec\char#1\relax}}}
-  \def\zhmath@zhfont@subs#1{{\mbox{\XeTeXinterchartokenstate=0\zhmathfont\mathcjksized\char#1\relax}}}
+  \def\zhmath@zhfont@disp#1{{\mbox{\zhmathfont\mathcjksizea\char#1\relax}}}
+  \def\zhmath@zhfont@text#1{{\mbox{\zhmathfont\mathcjksizeb\char#1\relax}}}
+  \def\zhmath@zhfont@scrp#1{{\mbox{\zhmathfont\mathcjksizec\char#1\relax}}}
+  \def\zhmath@zhfont@subs#1{{\mbox{\zhmathfont\mathcjksized\char#1\relax}}}
   
   \zhmath@setactivemathchar{"2E80}{"9FFF}{\zhmath@zhfont@disp}%
     {\zhmath@zhfont@text}{\zhmath@zhfont@scrp}{\zhmath@zhfont@subs}
