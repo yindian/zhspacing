@@ -1,5 +1,6 @@
 % Hist:	070824	First document out. All but Implementation written.
 %		In the evening fixed some typos.
+%	071211	Updated document, added description on zhmath and zhfont.
 \documentclass[12pt]{ltxdoc}
 %\usepackage[margin=1.5in]{geometry}
 \usepackage{fontspec}
@@ -457,11 +458,11 @@ active characters.
 
 Both |active| and |noactive| have disadvantages. In |active| mode the Chinese
 math font sizes are determined by \cs{mathcjksizea}/|b|/|c|/|d|, so they are
-somewhat independent with the main text size, which means their size cannot
-change when the main font size changes, which gives ugly results. However, in
-|noactive| mode, although Chinese math font size varies with the main font
-size, Chinese inside \cs{mathrm} etc cannot be displayed, because the math
-font family are set to \cs{mathrm}'s. So choose the option to your own need.
+somewhat independent with the main text size; however, currently zhmath uses
+\cs{f@size} to determine the main text size and is able to adjust the script font sizes
+respectively. In |noactive| mode, although Chinese math font size varies with
+the main font size, Chinese inside \cs{mathrm} etc cannot be displayed,
+because the math font family are set to \cs{mathrm}'s. 
 
 In plain \TeX\ no package options are available.
 \section{Provided Macros}
