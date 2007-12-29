@@ -13,10 +13,13 @@
 %		071215	Removed \XeTeXinterchartokenstate=0, as the XeTeX bug
 %			is fixed by JK. Changed \mathcjksizec/d to fit the 
 %			main text size.
+%		071229	Added \XeTeXinterchartokenstate=0 again, because not 
+%			everyone has the latest version of XeTeX. Added custom
+%			and nocustom options.
 \catcode`\@=11
 \ifx\zhmath@defined\@undefined
 \def\zhmath@defined{\relax}
-\def\filedate{2007/12/15}
+\def\filedate{2007/12/29}
 \ifx\zhspacingrevision\@undefined
 \input zhspacing.sty
 \fi
@@ -46,13 +49,17 @@
   \repeat
 }
 \newif\ifzhmath@active
+\newif\ifzhmath@custom
 
 \ifLaTeX@e   % in LaTeX, similar to mathcjk
 
 \ProvidesPackage{zhmath}[\filedate]
 \DeclareOption{active}{\zhmath@activetrue}
 \DeclareOption{noactive}{\zhmath@activefalse}
+\DeclareOption{custom}{\zhmath@customtrue}
+\DeclareOption{nocustom}{\zhmath@customfalse}
 \zhmath@activefalse
+\zhmath@customtrue
 \ProcessOptions\relax
 
 \def\mathcjksizea{}
@@ -63,10 +70,10 @@
 \@ifundefined{zhmathfont}{\newfontfamily\zhmathfont{SimSun}}{}
 
 \ifzhmath@active
-  \def\zhmath@zhfont@disp#1{{\mbox{\zhmathfont\mathcjksizea\char#1\relax}}}
-  \def\zhmath@zhfont@text#1{{\mbox{\zhmathfont\mathcjksizeb\char#1\relax}}}
-  \def\zhmath@zhfont@scrp#1{{\mbox{\zhmathfont\mathcjksizec\char#1\relax}}}
-  \def\zhmath@zhfont@subs#1{{\mbox{\zhmathfont\mathcjksized\char#1\relax}}}
+  \def\zhmath@zhfont@disp#1{{\mbox{\XeTeXinterchartokenstate=0\zhmathfont\mathcjksizea\char#1\relax}}}
+  \def\zhmath@zhfont@text#1{{\mbox{\XeTeXinterchartokenstate=0\zhmathfont\mathcjksizeb\char#1\relax}}}
+  \def\zhmath@zhfont@scrp#1{{\mbox{\XeTeXinterchartokenstate=0\zhmathfont\mathcjksizec\char#1\relax}}}
+  \def\zhmath@zhfont@subs#1{{\mbox{\XeTeXinterchartokenstate=0\zhmathfont\mathcjksized\char#1\relax}}}
   
   \zhmath@setactivemathchar{"2E80}{"9FFF}{\zhmath@zhfont@disp}%
     {\zhmath@zhfont@text}{\zhmath@zhfont@scrp}{\zhmath@zhfont@subs}
@@ -87,6 +94,7 @@
   \zhmath@setXeTeXmathcodefam{"2E80}{"9FFF}{\symhanzi}
 \fi
 
+\ifzhmath@custom
 \def\setalphanummathfonts#1{%
   \let\zhmathalphanumfont=#1%
   \begingroup
@@ -107,6 +115,7 @@
   \zhmath@setXeTeXmathcodefam{`\a}{`\z}{\sym@letter}
   \zhmath@setXeTeXmathcodefam{`\A}{`\Z}{\sym@letter}
 }
+\fi
 
 \else 	%in plain TeX
 
