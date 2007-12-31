@@ -4,8 +4,9 @@
 %		071210	Improved. Added \newfontfamilywithslant and
 %			\newfontfamilywithslantandbold to simplify setting.
 %		071211	Added fake bold support.
+%		071231	Added underdot support.
 \NeedsTeXFormat{LaTeX2e}[1996/12/01]
-\def\filedate{2007/12/11}
+\def\filedate{2007/12/31}
 \ProvidesPackage{zhfont}[\filedate]
 \RequirePackage{zhspacing}
 \newif\ifzhfont@fakebold
@@ -70,5 +71,23 @@
 \def\setzhmainfont{\newfontfamily\zhrmfont}
 \def\setzhsansfont{\newfontfamily\zhsffont}
 \def\setzhmonofont{\newfontfamily\zhttfont}
+
+\def\underdot@dot{\XeTeXinterchartokenstate=0\zhpunctfont \vbox to 0.5em{\vss\hbox{·}\vss}}
+\newskip\underdot@skip
+\underdot@skip=1.5pt
+\def\underdot#1{%
+  \begingroup
+  \makehanziglobalactive
+  \def\zhhanzihook##1{%
+    \setbox0=\hbox{\underdot@dot}%
+    \leavevmode\vtop{\baselineskip=\underdot@skip\lineskiplimit=-\maxdimen
+    \advance\baselineskip\ht0
+    \ialign{####\cr\XeTeXinterchartokenstate=0\zhfont ##1\cr\hidewidth
+    \underdot@dot\hidewidth\cr}}%
+  }%
+  \scantokens{#1}%
+  \makehanzigloballetter
+  \endgroup
+}
 
 \endinput
