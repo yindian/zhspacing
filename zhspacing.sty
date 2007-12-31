@@ -60,6 +60,11 @@
 %		071229	Added a few punctuation classification settings.
 %			Refined code. Added active hanzi hook. Removed some
 %			debug code for compiling speed. Not thoroughly tested.
+%		071231	Use \zhs@@a to reduce memory usage. Removed 
+%			\zhs@active@alphabound because it's not effective.
+%			Use \lastnodetype and \spacefactor to determine whether
+%			or not to insert \skipenzh. Added a few punctuation
+%			classification settings.
 % Note:	1.	Catcode test requires letter 'a' to be in category 11, and '!' 
 %		to be in category 12. So don't change the default catcodes.
 %	2.	To speed up processing long Chinese documents, set \skipzh to
@@ -643,8 +648,7 @@
   "3220->"3243,
   "3250->"32FE,
   "3300->"33FF,
-  %"3400->"4DB5,
-  "3400->"4DFF,
+  "3400->"4DB5,
   "4E00->"9FBB,
   "A000->"A014,
   "A016->"A48C,
@@ -672,38 +676,51 @@
   "FF5C->"FF5C,
   "FF5E->"FF5E,
   "FFE2->"FFE4,
-  %"20000->"2A6D6,
-  %"2F800->"2FA1D
-  "20000->"30000
+  "20000->"2A6D6,
+  "2F800->"2FA1D
 }
 
 % set active hanzi for hooking
 \def\makehanziglobalactive{%
   \@fornuminrange\zhs@tmpcnt:=\zhs@hanzirange\do{%
     \global\catcode\zhs@tmpcnt=\active}%
-  \XeTeXinterchartoks 0 255={\futurenonspacelet\zhs@tmpchar
-    \zhs@active@alphabound}%
 }
 
 \def\makehanzigloballetter{%
   \@fornuminrange\zhs@tmpcnt:=\zhs@hanzirange\do{%
     \global\catcode\zhs@tmpcnt=11}%
-  \XeTeXinterchartoks 0 255={}%
 }
 
-\def\zhhanzihook#1{\XeTeXinterchartokenstate=0\zhfont #1}
+\def\zhhanzihook#1{{\XeTeXinterchartokenstate=0\zhfont #1}}
 
-{\@fornuminrange\zhs@tmpcnt:=\zhs@hanzirange\do{%
-  \lccode`\~=\zhs@tmpcnt
-  \lowercase{\xdef~{\noexpand\zhs@aftermathskip\noexpand\zhhanzihook{\char
-    \number\zhs@tmpcnt}\noexpand\zhs@active@lookafter}}
-}}
+\def\enableactivehanzi{%
+  \def\zhs@@a##1{\zhs@afteralphamathskip\zhhanzihook{\char##1}\zhs@active@lookafter}%
+  \@fornuminrange\zhs@tmpcnt:=\zhs@hanzirange\do{%
+    \lccode`\~=\zhs@tmpcnt
+    \lowercase{\xdef~{\noexpand\zhs@@a{\number\zhs@tmpcnt}}}%
+  }%
+}
+\enableactivehanzi
+
+\def\zhs@afteralphamathskip{%
+  \ifhmode
+    \ifnum\lastnodetype=10 % math node
+      \skipenzh\relax
+    \else\ifnum\lastnodetype=0
+      \ifnum\spacefactor=999
+        \skipenzh
+      \else\ifnum\spacefactor=1000
+        \skipenzh
+      \fi\fi
+    \fi\fi
+  \fi
+}
 
 {\escapechar=-1
- \xdef\zhs@active@zhhanzihook{\string\zhhanzihook}
+ \xdef\zhs@active@ident{\string\zhs@@a}
 }
 \expandafter\def\expandafter\ifzhs@notactivehanzi\expandafter#\expandafter1%
-  \zhs@active@zhhanzihook#2\ok{\if!#2!}
+  \zhs@active@ident#2\ok{\if!#2!}
 \def\zhs@active@lookafter{\futurenonspacelet\zhs@tmpchar\zhs@active@look@fter}
 \def\zhs@active@look@fter{%
   %\expandafter\mydbgmessage\expandafter{\meaning\zhs@tmpchar}%
@@ -728,21 +745,9 @@
   %\let\zhs@tmp\iffalse % for \if match
   \edef\zhs@tmp{\meaning\zhs@tmpchar}%
   \expandafter\expandafter\expandafter\ifzhs@notactivehanzi
-  \expandafter\zhs@tmp\zhs@active@zhhanzihook\ok
+  \expandafter\zhs@tmp\zhs@active@ident\ok
   \else
     \skipzh\relax
-  \fi
-}
-
-\def\zhs@active@alphabound{%
-  \if\relax\noexpand\zhs@tmpchar % control sequence
-    \let\zhs@tmp\iffalse % for \if match
-    \edef\zhs@tmp{\meaning\zhs@tmpchar}%
-    \expandafter\expandafter\expandafter\ifzhs@notactivehanzi
-    \expandafter\zhs@tmp\zhs@active@zhhanzihook\ok
-    \else
-      \skipenzh\relax
-    \fi
   \fi
 }
 
@@ -753,7 +758,7 @@
   \@for\zhs@char:={`”,`’}\do{\XeTeXcharclass\zhs@char=3}
   \@for\zhs@char:={`—,`…}\do{\XeTeXcharclass\zhs@char=5}
   \@for\zhs@char:={`\!,`\",`\',`\(,`\),`\,,`\-,`\.,`\:,`\;,`\<,`\>,`\?,`\[,`\],`\`,`\{,`\},`\\,`\/}\do{\XeTeXcharclass\zhs@char=6}
-  \@for\zhs@char:={`℃,`·}\do{\XeTeXcharclass\zhs@char=7}
+  \@for\zhs@char:={`℃,`·,`＄,`％}\do{\XeTeXcharclass\zhs@char=7}
   % clear XeTeX pre-defined toks
   \XeTeXinterchartoks 0 1 = {}
   \XeTeXinterchartoks 0 2 = {}
