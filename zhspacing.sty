@@ -65,6 +65,8 @@
 %			Use \lastnodetype and \spacefactor to determine whether
 %			or not to insert \skipenzh. Added a few punctuation
 %			classification settings.
+%		080102	No \enableactivehanzi by default. Changed \zhhanzihook.
+%			Use hex number to represent hanzi. Added \zhs@font.
 % Note:	1.	Catcode test requires letter 'a' to be in category 11, and '!' 
 %		to be in category 12. So don't change the default catcodes.
 %	2.	To speed up processing long Chinese documents, set \skipzh to
@@ -79,7 +81,7 @@
   \errmessage{XeTeX 0.997 or above required to use zhspacing}%
 \fi
 \ifx\zhspacingrevision\@undefined
-\def\zhspacingrevision{2007/12/31}
+\def\zhspacingrevision{2008/01/02}
 \input usefulmacros.sty
 \ifLaTeX@e
   \ProvidesPackage{zhspacing}[\zhspacingrevision]
@@ -605,7 +607,7 @@
   \repeat
 }
 
-\def\zhs@hanzirange{% data from unicodeletters.tex, modified
+\def\zhs@hanzirange{% data from unicodeletters.tex
   "2E80->"2E99,
   "2E9B->"2EF3,
   "2F00->"2FD5,
@@ -679,6 +681,8 @@
   "20000->"2A6D6,
   "2F800->"2FA1D
 }
+\def\zhs@extarange{"3400->"4DB5}
+\def\zhs@extbrange{"20000->"2FA1D}
 
 % set active hanzi for hooking
 \def\makehanziglobalactive{%
@@ -691,16 +695,28 @@
     \global\catcode\zhs@tmpcnt=11}%
 }
 
-\def\zhhanzihook#1{{\XeTeXinterchartokenstate=0\zhfont #1}}
+\def\zhhanzihook#1{{\XeTeXinterchartokenstate=0\zhs@font #1}}
 
+\def\zhs@h@x#1{\ifcase#1 0\or 1\or 2\or 3\or 4\or 5\or 6\or 7\or 8\or
+ 9\or A\or B\or C\or D\or E\or F\fi}
+\def\zhs@hex#1{\if!#1!\else\ifnum#1<16 \zhs@h@x{#1}\else
+  \expandafter\zhs@hex\expandafter{\number\numexpr(#1-8)/16}%
+  \expandafter\zhs@h@x\expandafter{\number\numexpr#1-(#1-8)/16*16}\fi\fi}
+
+\let\zhs@font\zhfont
 \def\enableactivehanzi{%
-  \def\zhs@@a##1{\zhs@afteralphamathskip\zhhanzihook{\char##1}\zhs@active@lookafter}%
+  \def\zhs@@a##1{\zhs@afteralphamathskip
+    \expandafter\@ifrangecontains\expandafter[\zhs@extarange]{"##1}{\global
+      \let\zhs@font\zhcjkextafont}{\expandafter\@ifrangecontains
+      \expandafter[\zhs@extbrange]{"##1}{\global\let\zhs@font\zhcjkextbfont
+      }{\global\let\zhs@font\zhfont}}%
+    \zhhanzihook{\char"##1}\zhs@active@lookafter}%
   \@fornuminrange\zhs@tmpcnt:=\zhs@hanzirange\do{%
     \lccode`\~=\zhs@tmpcnt
-    \lowercase{\xdef~{\noexpand\zhs@@a{\number\zhs@tmpcnt}}}%
+    \lowercase{\xdef~{\noexpand\zhs@@a{\expandafter\zhs@hex
+      \expandafter{\number\zhs@tmpcnt}}}}%
   }%
 }
-\enableactivehanzi
 
 \def\zhs@afteralphamathskip{%
   \ifhmode
