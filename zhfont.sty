@@ -6,7 +6,8 @@
 %		071211	Added fake bold support.
 %		071231	Added underdot support.
 %		080102	Minor changes on underdot. Don's use \scantokens.
-%			Fixed bug of \zhfont in ulem.
+%			Fixed bug of \zhfont in ulem. Added font family
+%			selection and fake bold support in active hanzi.
 \NeedsTeXFormat{LaTeX2e}[1996/12/01]
 \def\filedate{2008/01/02}
 \ProvidesPackage{zhfont}[\filedate]
@@ -76,6 +77,30 @@
 \def\setzhmonofont{\newfontfamily\zhttfont}
 
 \enableactivehanzi
+\def\zhhanzihook#1{%
+  % select family
+  \long\edef\zhs@tmpmacro{\f@family}%
+  \def\zhs@curr@fam{0}%
+  \ifx\zhs@tmpmacro\sfdefault
+    \def\zhs@curr@fam{1}%
+  \else\ifx\zhs@tmpmacro\ttdefault
+    \def\zhs@curr@fam{2}%
+  \fi\fi
+  \edef\zhs@tmpmacro{\f@family}%
+  \ifx\zhs@tmpmacro\sfdefault
+    \def\zhs@curr@fam{1}%
+  \else\ifx\zhs@tmpmacro\ttdefault
+    \def\zhs@curr@fam{2}%
+  \fi\fi
+  \ifzhfont@fakebold\ifx\f@series\zhfont@bx
+    \special{pdf: literal direct q 0.3 w 2 Tr}%
+  \fi\fi
+  {\XeTeXinterchartokenstate=0\zhs@font #1}%
+  \ifzhfont@fakebold\ifx\f@series\zhfont@bx
+    \special{pdf: literal direct 0 Tr}%
+  \fi\fi
+}
+
 \def\underdot@dot{\XeTeXinterchartokenstate=0\zhpunctfont \vbox to 0.5em{\vss\hbox{·}\vss}}
 %\def\underdot@dot{\vbox to 0.5em{\vss\hbox{\bf .}\vss}}
 \newskip\underdot@skip
@@ -87,7 +112,25 @@
     \setbox0=\hbox{\underdot@dot}%
     \leavevmode\vtop{\baselineskip=\underdot@skip\lineskiplimit=-\maxdimen
     \advance\baselineskip\ht0
-    \ialign{####\cr\XeTeXinterchartokenstate=0\zhs@font ##1\cr\hidewidth\box0\hidewidth\cr}}%
+    % select family
+    \long\edef\zhs@tmpmacro{\f@family}%
+    \def\zhs@curr@fam{0}%
+    \ifx\zhs@tmpmacro\sfdefault
+      \def\zhs@curr@fam{1}%
+    \else\ifx\zhs@tmpmacro\ttdefault
+      \def\zhs@curr@fam{2}%
+    \fi\fi
+    \edef\zhs@tmpmacro{\f@family}%
+    \ifx\zhs@tmpmacro\sfdefault
+      \def\zhs@curr@fam{1}%
+    \else\ifx\zhs@tmpmacro\ttdefault
+      \def\zhs@curr@fam{2}%
+    \fi\fi
+    \ialign{####\cr\XeTeXinterchartokenstate=0\zhs@font 
+    \ifzhfont@fakebold\ifx\f@series\zhfont@bx
+    \special{pdf: literal direct q 0.3 w 2 Tr}##1%
+    \special{pdf: literal direct 0 Tr}\else ##1\fi\else ##1\fi
+    \cr\hidewidth\box0\hidewidth\cr}}%
   }%
   \underd@t
 }
