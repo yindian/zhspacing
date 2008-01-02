@@ -67,6 +67,8 @@
 %			classification settings.
 %		080102	No \enableactivehanzi by default. Changed \zhhanzihook.
 %			Use hex number to represent hanzi. Added \zhs@font.
+%			Added ambiwide and ambinarrow options. Made active
+%			hanzi protected.
 % Note:	1.	Catcode test requires letter 'a' to be in category 11, and '!' 
 %		to be in category 12. So don't change the default catcodes.
 %	2.	To speed up processing long Chinese documents, set \skipzh to
@@ -83,8 +85,13 @@
 \ifx\zhspacingrevision\@undefined
 \def\zhspacingrevision{2008/01/02}
 \input usefulmacros.sty
+\newif\ifzhs@ambiwide
+\zhs@ambiwidetrue
 \ifLaTeX@e
   \ProvidesPackage{zhspacing}[\zhspacingrevision]
+  \DeclareOption{ambiwide}{\zhs@ambiwidetrue}
+  \DeclareOption{ambinarrow}{\zhs@ambiwidefalse}
+  \ProcessOptions\relax
 \fi
 \XeTeXlinebreaklocale="zh"
 \XeTeXlinebreakskip=0pt plus 0.2em minus 0.1em
@@ -713,7 +720,7 @@
     \zhhanzihook{\char"##1}\zhs@active@lookafter}%
   \@fornuminrange\zhs@tmpcnt:=\zhs@hanzirange\do{%
     \lccode`\~=\zhs@tmpcnt
-    \lowercase{\xdef~{\noexpand\zhs@@a{\expandafter\zhs@hex
+    \lowercase{\protected\xdef~{\noexpand\zhs@@a{\expandafter\zhs@hex
       \expandafter{\number\zhs@tmpcnt}}}}%
   }%
 }
@@ -770,9 +777,13 @@
 \def\zhspacing{%
   \@for\zhs@char:={`：,`，,`、}\do{\XeTeXcharclass\zhs@char=4}
   \@for\zhs@char:={`。,`．,`；}\do{\XeTeXcharclass\zhs@char=10}
-  \@for\zhs@char:={`“,`‘}\do{\XeTeXcharclass\zhs@char=2}
-  \@for\zhs@char:={`”,`’}\do{\XeTeXcharclass\zhs@char=3}
-  \@for\zhs@char:={`—,`…}\do{\XeTeXcharclass\zhs@char=5}
+  \ifzhs@ambiwide
+    \@for\zhs@char:={`“,`‘}\do{\XeTeXcharclass\zhs@char=2}
+    \@for\zhs@char:={`”,`’}\do{\XeTeXcharclass\zhs@char=3}
+    \@for\zhs@char:={`—,`…}\do{\XeTeXcharclass\zhs@char=5}
+  \else
+    \@for\zhs@char:={`“,`‘,`”,`’,`—,`…}\do{\XeTeXcharclass\zhs@char=6}
+  \fi
   \@for\zhs@char:={`\!,`\",`\',`\(,`\),`\,,`\-,`\.,`\:,`\;,`\<,`\>,`\?,`\[,`\],`\`,`\{,`\},`\\,`\/}\do{\XeTeXcharclass\zhs@char=6}
   \@for\zhs@char:={`℃,`·,`＄,`％}\do{\XeTeXcharclass\zhs@char=7}
   % clear XeTeX pre-defined toks
