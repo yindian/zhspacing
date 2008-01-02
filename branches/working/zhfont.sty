@@ -5,10 +5,13 @@
 %			\newfontfamilywithslantandbold to simplify setting.
 %		071211	Added fake bold support.
 %		071231	Added underdot support.
+%		080102	Minor changes on underdot. Don's use \scantokens.
+%			Fixed bug of \zhfont in ulem.
 \NeedsTeXFormat{LaTeX2e}[1996/12/01]
-\def\filedate{2007/12/31}
+\def\filedate{2008/01/02}
 \ProvidesPackage{zhfont}[\filedate]
 \RequirePackage{zhspacing}
+\RequirePackage{zhulem}
 \newif\ifzhfont@fakebold
 \zhfont@fakeboldfalse
 \DeclareOption{fakebold}{\zhfont@fakeboldtrue}
@@ -66,26 +69,30 @@
 \newfontfamilywithslant\zhsffont{SimHei}
 \newfontfamilywithslantandbold\zhttfont{FangSong_GB2312}{KaiTi_GB2312}
 \fi
-\def\zhfont{\ifcase\zhs@curr@fam\zhrmfont\or\zhsffont\or\zhttfont\fi}
+\def\zhfont{\ifcase\zhs@curr@fam\zhrmfont\or\zhsffont\or\zhttfont\else\zhrmfont\fi}
 
 \def\setzhmainfont{\newfontfamily\zhrmfont}
 \def\setzhsansfont{\newfontfamily\zhsffont}
 \def\setzhmonofont{\newfontfamily\zhttfont}
 
+\enableactivehanzi
 \def\underdot@dot{\XeTeXinterchartokenstate=0\zhpunctfont \vbox to 0.5em{\vss\hbox{·}\vss}}
+%\def\underdot@dot{\vbox to 0.5em{\vss\hbox{\bf .}\vss}}
 \newskip\underdot@skip
-\underdot@skip=1.5pt
-\def\underdot#1{%
+\underdot@skip=2.5pt
+\def\underdot{%
   \begingroup
   \makehanziglobalactive
   \def\zhhanzihook##1{%
     \setbox0=\hbox{\underdot@dot}%
     \leavevmode\vtop{\baselineskip=\underdot@skip\lineskiplimit=-\maxdimen
     \advance\baselineskip\ht0
-    \ialign{####\cr\XeTeXinterchartokenstate=0\zhfont ##1\cr\hidewidth
-    \underdot@dot\hidewidth\cr}}%
+    \ialign{####\cr\XeTeXinterchartokenstate=0\zhs@font ##1\cr\hidewidth\box0\hidewidth\cr}}%
   }%
-  \scantokens{#1}%
+  \underd@t
+}
+\def\underd@t#1{%
+  #1%
   \makehanzigloballetter
   \endgroup
 }
