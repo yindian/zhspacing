@@ -10,10 +10,16 @@
 %			\usecustommathfonts can be used in document in LaTeX.
 %			Changed \hbox to \mbox. Changed default option to
 %			noactive.
+%		071215	Removed \XeTeXinterchartokenstate=0, as the XeTeX bug
+%			is fixed by JK. Changed \mathcjksizec/d to fit the 
+%			main text size.
+%		071229	Added \XeTeXinterchartokenstate=0 again, because not 
+%			everyone has the latest version of XeTeX. Added custom
+%			and nocustom options.
 \catcode`\@=11
 \ifx\zhmath@defined\@undefined
 \def\zhmath@defined{\relax}
-\def\filedate{2007/12/11}
+\def\filedate{2007/12/29}
 \ifx\zhspacingrevision\@undefined
 \input zhspacing.sty
 \fi
@@ -43,19 +49,23 @@
   \repeat
 }
 \newif\ifzhmath@active
+\newif\ifzhmath@custom
 
 \ifLaTeX@e   % in LaTeX, similar to mathcjk
 
 \ProvidesPackage{zhmath}[\filedate]
 \DeclareOption{active}{\zhmath@activetrue}
 \DeclareOption{noactive}{\zhmath@activefalse}
+\DeclareOption{custom}{\zhmath@customtrue}
+\DeclareOption{nocustom}{\zhmath@customfalse}
 \zhmath@activefalse
+\zhmath@customtrue
 \ProcessOptions\relax
 
 \def\mathcjksizea{}
 \def\mathcjksizeb{}
-\def\mathcjksizec{\scriptsize}
-\def\mathcjksized{\scriptsize}
+\def\mathcjksizec{\dimen@=\dimexpr\f@size pt*6/10\relax\fontsize{\dimen@}{\dimen@}}
+\def\mathcjksized{\dimen@=\dimexpr\f@size pt*5/10\relax\fontsize{\dimen@}{\dimen@}}
 
 \@ifundefined{zhmathfont}{\newfontfamily\zhmathfont{SimSun}}{}
 
@@ -84,6 +94,7 @@
   \zhmath@setXeTeXmathcodefam{"2E80}{"9FFF}{\symhanzi}
 \fi
 
+\ifzhmath@custom
 \def\setalphanummathfonts#1{%
   \let\zhmathalphanumfont=#1%
   \begingroup
@@ -104,6 +115,7 @@
   \zhmath@setXeTeXmathcodefam{`\a}{`\z}{\sym@letter}
   \zhmath@setXeTeXmathcodefam{`\A}{`\Z}{\sym@letter}
 }
+\fi
 
 \else 	%in plain TeX
 
