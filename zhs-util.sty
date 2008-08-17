@@ -1,12 +1,22 @@
-%	usefulmacros.sty
-%	This file provides several useful LaTeX macros as well as \ifLaTeX@e,
-%	and \futurenonspacelet.
-%	Licensed under LPPL.
+% zhs-util.sty
+% This file provides several useful LaTeX macros as well as \ifLaTeX@e,
+% and \futurenonspacelet.
+% Licensed under LPPL.
+% Hist:
+%	080809	Renamed from usefulmacros.sty in old zhspacing bundle.
+%		Minor changes.
 \catcode`\@=11
-\ifx\@usefulmacros@defined\@undefined
-\def\@usefulmacros@defined{\relax}
-\def\@usefulmacros@LaTeX@e{LaTeX2e}
-\def\ifLaTeX@e{\ifx\fmtname\@usefulmacros@LaTeX@e}
+\ifx\zhs@usefulmacros@defined\@undefined
+\else
+  \expandafter\endinput
+\fi
+\def\zhs@usefulmacros@defined{\relax}
+\def\zhs@usefulmacros@LaTeX@e{LaTeX2e}
+\ifx\fmtname\zhs@usefulmacros@LaTeX@e
+  \expandafter\let\expandafter\ifLaTeX@e\csname iftrue\endcsname
+\else
+  \expandafter\let\expandafter\ifLaTeX@e\csname iffalse\endcsname
+\fi
 %\ifx\LaTeX\@undefined
 \ifLaTeX@e\else
 \def\@nnil{\@nil}%
@@ -46,8 +56,17 @@
 \def\:{\let\@sptoken= } \:  % this makes \@sptoken a space token
 \def\:{\@xifnch} \expandafter\def\: {\futurelet\@let@token\@ifnch}
 %
+\long\def \@gobble #1{}
+\long\def \@gobbletwo #1#2{}
+\long\def \@gobblefour #1#2#3#4{}
+\long\def\@firstofone#1{#1}
 \long\def\@firstoftwo#1#2{#1}
 \long\def\@secondoftwo#1#2{#2}
+\let\@iden\@firstofone
+\long\def\@thirdofthree#1#2#3{#3}
+\def\@expandtwoargs#1#2#3{%
+\edef\reserved@a{\noexpand#1{#2}{#3}}\reserved@a}
+%
 \expandafter\ifx\csname ifcsname\endcsname\relax
 \def\@ifundefined#1{%
   \expandafter\ifx\csname#1\endcsname\relax
@@ -62,9 +81,15 @@
   \else
     \expandafter\@secondoftwo
   \fi}
-\fi
+\fi % end ifx ifcsname
 %
+\long\def\g@addto@macro#1#2{%
+  \begingroup
+    \toks@\expandafter{#1#2}%
+    \xdef#1{\the\toks@}%
+  \endgroup}
 \def\@namedef#1{\expandafter\def\csname #1\endcsname}
+\def\@nameuse#1{\csname #1\endcsname}
 %
 \def\newcount{\alloc@0\count\countdef\insc@unt}
 \def\newdimen{\alloc@1\dimen\dimendef\insc@unt}
@@ -74,7 +99,24 @@
 \def\newtoks{\alloc@5\toks\toksdef\@cclvi}
 \def\newread{\alloc@6\read\chardef\sixt@@n}
 \def\newwrite{\alloc@7\write\chardef\sixt@@n}
-\fi % end if
+\fi % end ifLaTeX@e
+
+\def\@nameedef#1{\expandafter\edef\csname #1\endcsname}
+\expandafter\ifx\csname ifcsname\endcsname\relax
+\else
+  \def\@nameuse@asserted#1{%
+    \ifcsname #1\endcsname
+      \csname #1\endcsname
+    \else
+      \errmessage{Macro #1 not defined.}
+    \fi
+  }
+\fi
+
+\def\@strip@leading#1#2{% #1: leading char, #2:macro
+  \def\@strip@le@ding#1##1\@nnil{##1}%
+  \edef#2{\expandafter\@strip@le@ding#2\@nnil}%
+}
 
 \def\@BTcs{}
 \let\nexttoken\relax
@@ -101,5 +143,4 @@
   \hrule height \fbox@linewidth width \fbox@tmpdim
   }}%
 }
-\fi
 \fi
