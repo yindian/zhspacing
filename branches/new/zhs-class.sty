@@ -1,0 +1,262 @@
+% zhs-class.sty by YIN Dian
+% Character class management module for zhspacing
+% Users should not use this package directly. Require XeTeX for running.
+% Hist:
+%       080809  zhspacing project restarted from scratch. New class management
+%               module planned. New coding style.
+%       080810  Continue working.
+%       080816  Continue working. Finished \zhs@registerclstoks. 
+%               Fixed \zhs@cls@subs@cpgrp to allow \getparam in nested groups.
+\ifcsname zhs@newbaseclass\endcsname
+  \message{zhs-class.sty already loaded.}%
+  \expandafter\endinput
+\fi
+
+\endlinechar=-1
+\catcode`\@=11
+
+\input zhs-util.sty
+
+\def\zhs@baseclass@list{}
+\def\zhs@class@list{}
+\newif\ifzhs@cls@result
+\newcount\zhs@cls@tmpcnt
+
+% self, others are reserved class names
+\def\zhs@cls@name@self{\relax}
+\def\zhs@cls@name@others{\relax}
+
+%% some private macros
+\def\zhs@cls@assert@name@avail#1{
+  \def\zhs@cls@tmp{#1}
+  \ifx\zhs@cls@tmp\@empty
+    \errmessage{Class name shouldn't be empty.}
+  \fi
+  \edef\zhs@cls@temp{#1}
+  \unless\ifx\zhs@cls@tmp\zhs@cls@temp
+    \errmessage{Class name should be plain text.}
+  \fi
+  \ifcsname zhs@cls@name@#1\endcsname
+    \errmessage{Class name #1 already in use.}
+  \fi
+}
+
+\def\zhs@cls@assert@name@defed#1{
+  \unless\ifcsname zhs@cls@name@#1\endcsname
+    \errmessage{Class #1 not defined.}
+  \fi
+}
+
+\def\zhs@cls@checkinset#1#2{% #1: item, #2: set
+  \zhs@cls@resultfalse
+  \edef\zhs@cls@tmp{#1}
+  \@for\zhs@cls@temp:=#2\do{
+    \ifx\zhs@cls@tmp\zhs@cls@temp
+      \zhs@cls@resulttrue
+    \fi
+  }
+}
+
+%%%%%%% \zhs@newbaseclass %%%%%%%
+
+\def\zhs@newbaseclass#1{% #1: class name
+  \zhs@cls@assert@name@avail{#1}
+  \@namedef{zhs@cls@name@#1}{\relax}
+  \@namedef{zhs@cls@param@#1}{}
+  \ifx\zhs@baseclass@list\@empty
+    \edef\zhs@baseclass@list{#1}
+  \else
+    \edef\zhs@baseclass@list{\zhs@baseclass@list,#1}
+  \fi
+}
+\zhs@newbaseclass{raw}          % reserved
+
+\def\zhs@setbsclsparam#1#2{% #1: base class name, #2: parameter list
+  \zhs@cls@assert@name@defed{#1}
+  \@namedef{zhs@cls@param@#1}{}
+  \@for\zhs@cls@tmp:=#2\do{
+    \@nameedef{zhs@cls@param@#1}{\@nameuse{zhs@cls@param@#1},\zhs@cls@tmp}
+  }
+  \expandafter\ifx\csname zhs@cls@param@#1\endcsname\@empty
+  \else
+    \expandafter\@strip@leading\expandafter,\csname zhs@cls@param@#1\endcsname
+  \fi
+}
+
+\def\zhs@getbsclsparam#1{% #1: base class name
+  \zhs@cls@assert@name@defed{#1}
+  \@nameuse{zhs@cls@param@#1}
+}
+
+% the token between class \A and class \B is:
+% \csname zhs@cls@tb@\A @\B\endcsname \csname zhs@cls@ta@\B @\A\endcsname
+\def\zhs@setbsclstokbefore#1\before#2\tok#3{%#3:token in which \getparam can be used
+  \zhs@cls@assert@name@defed{#1}
+  \zhs@cls@assert@name@defed{#2}
+  \@namedef{zhs@cls@tb@#1@#2}{#3}
+}
+
+\def\zhs@setbsclstokafter#1\after#2\tok#3{% #3: token in which \getparam can be used
+  \zhs@cls@assert@name@defed{#1}
+  \zhs@cls@assert@name@defed{#2}
+  \@namedef{zhs@cls@ta@#1@#2}{#3}
+}
+
+% the token between class \A and class \A is:
+% \csname zhs@cls@ti@\A\endcsname
+\def\zhs@setbsclstokinterself#1\tok#2{% #2: token in which \getparam can be used
+  \zhs@cls@assert@name@defed{#1}
+  \@namedef{zhs@cls@ti@#1}{#2}
+}
+
+%%%%%%% \zhs@newclass %%%%%%%%
+\def\zhs@newclass{\@ifnextchar[{\zhs@cls@newclass}{\zhs@cls@newclass[raw]}}
+
+\def\zhs@cls@newclass[#1]#2#3{% #1: base cls name, #2: class name, #3: cls num
+  \zhs@cls@assert@name@defed{#1}
+  \zhs@cls@assert@name@avail{#2}
+  \setbox\z@=\hbox{\count\z@=#3}
+  \unless\ifdim\wd\z@=\z@
+    \errmessage{Class number #3 seems not a number.}
+  \fi
+  \ifcsname zhs@cls@numcls@#3\endcsname
+    \errmessage{Class number #3 already in use.}
+  \fi
+  \@namedef{zhs@cls@name@#2}{\relax}
+  \ifx\zhs@class@list\@empty
+    \edef\zhs@class@list{#2}
+  \else
+    \edef\zhs@class@list{\zhs@class@list,#2}
+  \fi
+  \@namedef{zhs@cls@basecls@#2}{#1}
+  \@namedef{zhs@cls@clsnum@#2}{#3}
+  \@namedef{zhs@cls@numcls@#3}{#2}
+  \expandafter\@for\expandafter\zhs@cls@tmp\expandafter:\expandafter=\csname
+  zhs@cls@param@#1\endcsname\do{
+    \edef\zhs@cls@tmp{zhs@cls@@p@#2@\zhs@cls@tmp}
+    \expandafter\@nameedef\expandafter{\zhs@cls@tmp}{}
+  }
+}
+\zhs@newclass{boundary}{255}
+
+\def\zhs@getbasecls#1{% #1: class name
+  \@nameuse@asserted{zhs@cls@basecls@#1}
+}
+
+\def\zhs@getclsnum#1{% #1: class name
+  \@nameuse@asserted{zhs@cls@clsnum@#1}
+}
+
+\def\zhs@getnumcls#1{% #1: class number
+  \@nameuse@asserted{zhs@cls@numcls@#1}
+}
+
+\def\zhs@setclsparamval#1#2#3{% #1: class, #2: param, #3: value
+  \unless\ifcsname zhs@cls@@p@#1@#2\endcsname
+    \errmessage{Param #2 for class #1 not defined.}
+  \fi
+  \@namedef{zhs@cls@@p@#1@#2}{#3}
+}
+
+\def\zhs@getclsparamval#1#2{% #1: class, #2: param
+  \@nameuse@asserted{zhs@cls@@p@#1@#2}
+}
+
+% \csname zhs@cls@tb@\A @\B\endcsname \csname zhs@cls@ta@\B @\A\endcsname
+\def\zhs@cls@subst@param{\futurelet\zhs@next\zhs@cls@subs@}
+\def\zhs@cls@subs@{\ifx\zhs@next\@nnil\let\zhs@n@xt\@gobble\else
+  \ifx\zhs@next\getparam\let\zhs@n@xt\zhs@cls@subs@s\else\ifx\zhs@next\bgroup
+  \let\zhs@n@xt\zhs@cls@subs@cpgrp\else\let\zhs@n@xt\zhs@cls@subs@cp\fi\fi\fi
+  \zhs@n@xt}
+\def\zhs@cls@subs@cp#1{% copy a single token to \zhs@cls@result
+  \expandafter\def\expandafter\zhs@cls@result\expandafter{\zhs@cls@result#1}
+  \futurelet\zhs@next\zhs@cls@subs@
+}
+\def\zhs@cls@subs@cpgrp#1{% copy a group to \zhs@cls@result
+  %\expandafter\def\expandafter\zhs@cls@result\expandafter{\zhs@cls@result{#1}}
+  \begingroup
+    \advance\zhs@cls@tmpcnt 1
+    \def\zhs@cls@result{}
+    \zhs@cls@subst@param #1\@nnil
+    \advance\zhs@cls@tmpcnt -1
+    \global\expandafter\let\csname zhs@cls@temp\the\zhs@cls@tmpcnt\endcsname
+      \zhs@cls@result
+  \endgroup
+  \expandafter\let\expandafter\zhs@cls@temp
+    \csname zhs@cls@temp\the\zhs@cls@tmpcnt\endcsname
+  \expandafter\expandafter\expandafter\def\expandafter\expandafter\expandafter
+    \zhs@cls@result\expandafter\expandafter\expandafter{\expandafter
+    \zhs@cls@result
+    \expandafter{\zhs@cls@temp}}
+  \futurelet\zhs@next\zhs@cls@subs@
+}
+
+\def\zhs@cls@getclstok#1#2{% #1: class A, #2: class B
+  \zhs@cls@tmpcnt=0
+  \def\zhs@cls@result{}
+  \expandafter\let\expandafter\zhs@cls@object\csname
+  zhs@cls@tb@\zhs@getbasecls{#1}@\zhs@getbasecls{#2}\endcsname
+  \def\zhs@cls@subs@s\getparam##1{% substitute \getparam{}
+    \expandafter\def\expandafter\zhs@cls@result\expandafter{\zhs@cls@result
+      \csname zhs@cls@@p@#1@##1\endcsname}
+    \futurelet\zhs@next\zhs@cls@subs@
+  }
+  \unless\ifx\zhs@cls@object\relax
+    \expandafter\zhs@cls@subst@param\zhs@cls@object\@nnil
+  \fi
+  \let\zhs@cls@tmp\zhs@cls@result
+  %
+  \def\zhs@cls@result{}
+  %\expandafter\let\expandafter\zhs@cls@object\csname zhs@cls@ta@#2@#1\endcsname
+  \expandafter\let\expandafter\zhs@cls@object\csname
+  zhs@cls@ta@\zhs@getbasecls{#2}@\zhs@getbasecls{#1}\endcsname
+  \def\zhs@cls@subs@s\getparam##1{% substitute \getparam{}
+    \expandafter\expandafter\expandafter\def\expandafter\expandafter\expandafter
+      \zhs@cls@result\expandafter\expandafter\expandafter{\expandafter
+      \zhs@cls@result
+      \csname zhs@cls@@p@#2@##1\endcsname}
+    \futurelet\zhs@next\zhs@cls@subs@
+  }
+  \unless\ifx\zhs@cls@object\relax
+    \expandafter\zhs@cls@subst@param\zhs@cls@object\@nnil
+  \fi
+  \expandafter\expandafter\expandafter\def\expandafter\expandafter\expandafter
+    \zhs@cls@tmp\expandafter\expandafter\expandafter{\expandafter\zhs@cls@tmp
+    \zhs@cls@result}
+  \let\zhs@cls@result\zhs@cls@tmp
+  \def\zhs@cls@subs@s\getparam##1{\errmessage{Unexpected \zhs@cls@subs@s.}}
+  \zhs@cls@tmpcnt=0
+}
+
+\unless\ifdefined\zhs@dbg
+  \def\zhs@dbg{\immediate\write16}
+\fi
+%%%%%%% \zhs@registerclstoks %%%%%%%%
+\def\zhs@registerclstoks{
+  \let\zhs@cls@oldgetp\getparam
+  \def\getparam{\errmessage{Cannot use \string\getparam here.}}
+  \zhs@dbg{Class list: \zhs@class@list}
+  \@for\zhs@class:=\zhs@class@list\do{
+    \@for\zhs@otherclass:=\zhs@class@list\do{
+      \edef\zhs@cls@do{\noexpand\zhs@cls@getclstok{\zhs@class}{\zhs@otherclass}}
+      \zhs@cls@do
+      \XeTeXinterchartoks\zhs@getclsnum{\zhs@class} \zhs@getclsnum{%
+        \zhs@otherclass}=\expandafter{\zhs@cls@result}
+      \zhs@dbg{Register (\zhs@class, \zhs@otherclass): \meaning\zhs@cls@result.}
+    }
+  }
+  \let\getparam\zhs@cls@oldgetp
+}
+
+%\def\zhs@cls@initparam#1{% #1: class name
+%  \expandafter\@for\expandafter\zhs@cls@tmp\expandafter:\expandafter=\csname
+%  zhs@cls@param@\zhs@getbasecls{#1}\endcsname\do{
+%    \edef\zhs@cls@tmp{zhs@cls@@p@#1@\zhs@cls@tmp}
+%    \expandafter\@nameedef\expandafter{\zhs@cls@tmp}{}
+%  }
+%  %\def\setparam##1{\@namedef{zhs@cls@@p@#1@##1}
+%  \def\getparam##1{\@nameuse@asserted{zhs@cls@@p@#1@##1}
+%}
+
+\endlinechar=`\^^M
+\endinput
