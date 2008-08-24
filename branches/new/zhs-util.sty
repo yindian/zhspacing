@@ -5,6 +5,7 @@
 % Hist:
 %	080809	Renamed from usefulmacros.sty in old zhspacing bundle.
 %		Minor changes.
+%       080819  Add \@xpaft@fi@iff for nested if convenience.
 \catcode`\@=11
 \ifx\zhs@usefulmacros@defined\@undefined
 \else
@@ -116,6 +117,10 @@
 \def\@strip@leading#1#2{% #1: leading char, #2:macro
   \def\@strip@le@ding#1##1\@nnil{##1}%
   \edef#2{\expandafter\@strip@le@ding#2\@nnil}%
+}
+
+\def\@xpaft@fi@iff{
+      \expandafter\fi\expandafter\iffalse
 }
 
 \def\@BTcs{}

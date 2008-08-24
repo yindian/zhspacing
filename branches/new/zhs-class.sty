@@ -7,6 +7,8 @@
 %       080810  Continue working.
 %       080816  Continue working. Finished \zhs@registerclstoks. 
 %               Fixed \zhs@cls@subs@cpgrp to allow \getparam in nested groups.
+%       080819  Minor fix. Move duplicated code into \zhs@cls@set@getparam.
+%               Add \zhs@opt@allowemptyparam check.
 \ifcsname zhs@newbaseclass\endcsname
   \message{zhs-class.sty already loaded.}%
   \expandafter\endinput
@@ -133,8 +135,8 @@
   \@namedef{zhs@cls@numcls@#3}{#2}
   \expandafter\@for\expandafter\zhs@cls@tmp\expandafter:\expandafter=\csname
   zhs@cls@param@#1\endcsname\do{
-    \edef\zhs@cls@tmp{zhs@cls@@p@#2@\zhs@cls@tmp}
-    \expandafter\@nameedef\expandafter{\zhs@cls@tmp}{}
+    \edef\zhs@cls@temp{zhs@cls@@p@#2@\zhs@cls@tmp}
+    \expandafter\@nameedef\expandafter{\zhs@cls@temp}{}
   }
 }
 \zhs@newclass{boundary}{255}
@@ -190,17 +192,39 @@
     \expandafter{\zhs@cls@temp}}
   \futurelet\zhs@next\zhs@cls@subs@
 }
+\def\zhs@cls@set@getparam#1{% #1: class name
+  \ifdefined\zhs@opt@allowemptyparam
+    \ifnum\zhs@opt@allowemptyparam>0
+  \def\zhs@cls@subs@s\getparam##1{% substitute \getparam{}
+    \expandafter\expandafter\expandafter\def\expandafter\expandafter\expandafter
+      \zhs@cls@result\expandafter\expandafter\expandafter{\expandafter
+      \zhs@cls@result
+      \csname zhs@cls@@p@#1@##1\endcsname}
+    \futurelet\zhs@next\zhs@cls@subs@
+  }
+    \else
+      \@xpaft@fi@iff
+    \fi
+  \else
+  \def\zhs@cls@subs@s\getparam##1{% substitute \getparam{}
+    \expandafter\unless\expandafter\ifx\csname zhs@cls@@p@#1@##1\endcsname
+    \@empty
+    \expandafter\expandafter\expandafter\def\expandafter\expandafter\expandafter
+      \zhs@cls@result\expandafter\expandafter\expandafter{\expandafter
+      \zhs@cls@result
+      \csname zhs@cls@@p@#1@##1\endcsname}
+    \fi
+    \futurelet\zhs@next\zhs@cls@subs@
+  }
+  \fi
+}
 
 \def\zhs@cls@getclstok#1#2{% #1: class A, #2: class B
   \zhs@cls@tmpcnt=0
   \def\zhs@cls@result{}
   \expandafter\let\expandafter\zhs@cls@object\csname
   zhs@cls@tb@\zhs@getbasecls{#1}@\zhs@getbasecls{#2}\endcsname
-  \def\zhs@cls@subs@s\getparam##1{% substitute \getparam{}
-    \expandafter\def\expandafter\zhs@cls@result\expandafter{\zhs@cls@result
-      \csname zhs@cls@@p@#1@##1\endcsname}
-    \futurelet\zhs@next\zhs@cls@subs@
-  }
+  \zhs@cls@set@getparam{#1}
   \unless\ifx\zhs@cls@object\relax
     \expandafter\zhs@cls@subst@param\zhs@cls@object\@nnil
   \fi
@@ -210,13 +234,7 @@
   %\expandafter\let\expandafter\zhs@cls@object\csname zhs@cls@ta@#2@#1\endcsname
   \expandafter\let\expandafter\zhs@cls@object\csname
   zhs@cls@ta@\zhs@getbasecls{#2}@\zhs@getbasecls{#1}\endcsname
-  \def\zhs@cls@subs@s\getparam##1{% substitute \getparam{}
-    \expandafter\expandafter\expandafter\def\expandafter\expandafter\expandafter
-      \zhs@cls@result\expandafter\expandafter\expandafter{\expandafter
-      \zhs@cls@result
-      \csname zhs@cls@@p@#2@##1\endcsname}
-    \futurelet\zhs@next\zhs@cls@subs@
-  }
+  \zhs@cls@set@getparam{#2}
   \unless\ifx\zhs@cls@object\relax
     \expandafter\zhs@cls@subst@param\zhs@cls@object\@nnil
   \fi
