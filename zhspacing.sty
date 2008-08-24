@@ -1,0 +1,84 @@
+% zhspacing.sty by YIN Dian
+% XeTeX macro for Chinese typesetting with punctuation spacing adjustment
+% and prohibitions.
+% Hist:
+%       080818  Recoding started.
+%       080819  Continue.
+% boundary, raw, hanzi, lineendforbid, linestartforbid, longpunct, hook
+\ifcsname zhspacing\endcsname
+  \message{zhspacing.sty already loaded.}%
+  \expandafter\endinput
+\fi
+
+\endlinechar=-1
+\catcode`\@=11
+
+\unless\ifdefined\XeTeXinterchartoks
+  \errmessage{XeTeX 0.997 or above required to use zhspacing}
+\fi
+
+\input zhs-util.sty
+
+\XeTeXlinebreaklocale "zh"
+\XeTeXlinebreakskip=0pt plus 0.2em minus 0.1em
+\let\zhnobreak\nobreak
+
+% font save and restore
+\def\zhs@oldf@encoding{}
+\def\zhs@oldf@family{}
+\def\zhs@oldf@series{}
+\def\zhs@oldf@shape{}
+\def\zhs@oldf@size{}
+\def\zhs@savef@nt#1{%
+  \expandafter\xdef\csname zhs@#1f@encoding\endcsname{\f@encoding}%
+  \expandafter\xdef\csname zhs@#1f@family\endcsname{\f@family}%
+  \expandafter\xdef\csname zhs@#1f@series\endcsname{\f@series}%
+  \expandafter\xdef\csname zhs@#1f@shape\endcsname{\f@shape}%
+  \expandafter\xdef\csname zhs@#1f@size\endcsname{\f@size}%
+}
+\def\zhs@restoref@nt#1{%
+  \edef\f@encoding{\csname zhs@#1f@encoding\endcsname}%
+  \edef\f@family{\csname zhs@#1f@family\endcsname}%
+  \edef\f@series{\csname zhs@#1f@series\endcsname}%
+  \edef\f@shape{\csname zhs@#1f@shape\endcsname}%
+  \edef\f@size{\csname zhs@#1f@size\endcsname}%
+  \selectfont
+}
+\def\zhsgroupsavefont{%
+  \let\zhs@savefont=\begingroup
+  \let\zhs@restorefont=\endgroup
+}
+\def\zhsnfsssavefont{%
+  \def\zhs@savefont{\zhs@savef@nt{old}}
+  \def\zhs@restorefont{\zhs@restoref@nt{old}}
+}
+\ifLaTeX@e
+  \zhsnfsssavefont
+\else
+  \zhsgroupsavefont
+\fi
+
+\input zhs-class.sty
+\let\newbaseclass\zhs@newbaseclass
+\let\setbsclsparam\zhs@setbsclsparam
+\let\getbsclsparam\zhs@getbsclsparam
+\let\setbsclstokbefore\zhs@setbsclstokbefore
+\let\setbsclstokafter\zhs@setbsclstokafter
+\let\setbsclstokinterself\zhs@setbsclstokinterself
+\let\newclass\zhs@newclass
+\let\setclsparamval\zhs@setclsparamval
+\let\getclsparamval\zhs@getclsparamval
+
+% base class 'raw' defined internally
+\newbaseclass{normalfullwidth}
+\newbaseclass{lineendforbid}
+\newbaseclass{linestartforbid}
+\newbaseclass{specialhooked}
+
+\setbsclsparam{normalfullwidth}{iskip,xskip,font}
+\setbsclsparam{lineendforbid}{bskip,askip,iskip,lskip,font}
+\setbsclsparam{linestartforbid}{bskip,askip,iskip,lskip,font}
+\setbsclsparam{specialhooked}{hook,iskip}
+
+\endlinechar=`\^^M
+\endinput
